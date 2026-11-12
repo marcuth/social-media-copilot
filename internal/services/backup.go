@@ -51,8 +51,10 @@ type BackupService struct {
 
 func (s *BackupService) GetBackupInfo() (BackupInfo, error) {
 	info := BackupInfo{Path: s.Path}
-	if st, err := os.Stat(s.Path); err == nil {
-		info.SizeBytes = st.Size()
+	for _, f := range []string{s.Path, s.Path + "-wal"} {
+		if st, err := os.Stat(f); err == nil {
+			info.SizeBytes += st.Size()
+		}
 	}
 	last, err := getSetting(s.DB, settingLastBackup, "")
 	info.LastBackupAt = last
