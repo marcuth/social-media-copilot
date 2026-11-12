@@ -1,8 +1,7 @@
+import wails from "@wailsio/runtime/plugins/vite"
 import { fileURLToPath, URL } from "node:url"
-
 import tailwindcss from "@tailwindcss/vite"
 import vue from "@vitejs/plugin-vue"
-import wails from "@wailsio/runtime/plugins/vite"
 import { defineConfig } from "vite"
 
 // https://vitejs.dev/config/

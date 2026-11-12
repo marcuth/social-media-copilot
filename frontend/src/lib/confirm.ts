@@ -22,7 +22,12 @@ export const confirmState = reactive<ConfirmState>({
 /** Opens the app-wide confirmation dialog and resolves with the choice. */
 export function confirmDialog(options: ConfirmOptions): Promise<boolean> {
     confirmState.resolve?.(false)
-    Object.assign(confirmState, { confirmText: undefined, destructive: false, ...options, open: true })
+    Object.assign(confirmState, {
+        confirmText: undefined,
+        destructive: false,
+        ...options,
+        open: true,
+    })
     return new Promise((resolve) => {
         confirmState.resolve = resolve
     })

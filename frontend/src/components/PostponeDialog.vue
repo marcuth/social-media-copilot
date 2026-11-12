@@ -1,15 +1,28 @@
 <script setup lang="ts">
-import { computed, ref } from "vue"
 import { CalendarClock } from "@lucide/vue"
+import { computed, ref } from "vue"
 
-import { Button } from "@/components/ui/button"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import {
+    addDays,
+    formatDay,
+    formatTime,
+    parseSchedule,
+    toSchedule,
+} from "@/lib/dates"
+import { PostService, normPost, type Post, type PostN } from "@/lib/api"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { toast, toastError } from "@/lib/toast"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { PostService, normPost, type Post, type PostN } from "@/lib/api"
-import { addDays, formatDay, formatTime, parseSchedule, toSchedule } from "@/lib/dates"
-import { toast, toastError } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 
 const props = defineProps<{ post: Post }>()
@@ -33,7 +46,8 @@ const options: { id: Choice; label: string }[] = [
 ]
 
 const preview = computed(() => {
-    if (choice.value === "next_free") return "o primeiro dia sem posts deste perfil, no mesmo horário"
+    if (choice.value === "next_free")
+        return "o primeiro dia sem posts deste perfil, no mesmo horário"
     let d: Date | null = null
     if (choice.value === "date") d = parseSchedule(date.value)
     else if (current.value) d = addDays(current.value, Number(choice.value))
@@ -45,14 +59,23 @@ async function confirm(): Promise<void> {
     try {
         const res = await PostService.Postpone({
             postId: props.post.id,
-            mode: choice.value === "date" ? "date" : choice.value === "next_free" ? "next_free" : "days",
+            mode:
+                choice.value === "date"
+                    ? "date"
+                    : choice.value === "next_free"
+                      ? "next_free"
+                      : "days",
             days: Number(choice.value) || 0,
             date: date.value,
             reason: reason.value,
             cascade: cascade.value,
         })
         const others = res.movedCount - 1
-        toast(others > 0 ? `Post adiado. ${others} post(s) seguintes também foram empurrados.` : "Post adiado.")
+        toast(
+            others > 0
+                ? `Post adiado. ${others} post(s) seguintes também foram empurrados.`
+                : "Post adiado.",
+        )
         emit("done", normPost(res.post))
     } catch (e) {
         toastError(e)
@@ -71,12 +94,20 @@ async function confirm(): Promise<void> {
                 </DialogTitle>
                 <DialogDescription>
                     <strong class="text-foreground">{{ post.title }}</strong>
-                    {{ current ? `está marcado para ${formatDay(current)}, ${formatTime(current)}.` : "ainda não tem data." }}
+                    {{
+                        current
+                            ? `está marcado para ${formatDay(current)}, ${formatTime(current)}.`
+                            : "ainda não tem data."
+                    }}
                 </DialogDescription>
             </DialogHeader>
 
             <div class="space-y-4">
-                <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Para quando">
+                <div
+                    class="flex flex-wrap gap-2"
+                    role="radiogroup"
+                    aria-label="Para quando"
+                >
                     <button
                         v-for="o in options"
                         :key="o.id"
@@ -100,7 +131,11 @@ async function confirm(): Promise<void> {
 
                 <div v-if="choice === 'date'" class="space-y-2">
                     <Label for="postpone-date">Nova data</Label>
-                    <Input id="postpone-date" v-model="date" type="datetime-local" />
+                    <Input
+                        id="postpone-date"
+                        v-model="date"
+                        type="datetime-local"
+                    />
                 </div>
 
                 <div class="rounded-lg bg-muted p-4 text-sm">
@@ -109,22 +144,34 @@ async function confirm(): Promise<void> {
 
                 <div class="space-y-2">
                     <Label for="postpone-reason">Motivo (opcional)</Label>
-                    <Input id="postpone-reason" v-model="reason" placeholder="Ex.: falta gravar a cena externa" />
+                    <Input
+                        id="postpone-reason"
+                        v-model="reason"
+                        placeholder="Ex.: falta gravar a cena externa"
+                    />
                 </div>
 
-                <Label v-if="current" class="flex items-start gap-3 font-normal">
+                <Label
+                    v-if="current"
+                    class="flex items-start gap-3 font-normal"
+                >
                     <Checkbox v-model="cascade" class="mt-0.5" />
                     <span>
-                        <span class="block font-medium">Empurrar a fila deste perfil</span>
+                        <span class="block font-medium"
+                            >Empurrar a fila deste perfil</span
+                        >
                         <span class="text-xs text-muted-foreground">
-                            Os próximos posts não publicados andam a mesma distância, mantendo o espaçamento.
+                            Os próximos posts não publicados andam a mesma
+                            distância, mantendo o espaçamento.
                         </span>
                     </span>
                 </Label>
             </div>
 
             <DialogFooter>
-                <Button variant="outline" @click="emit('close')">Cancelar</Button>
+                <Button variant="outline" @click="emit('close')"
+                    >Cancelar</Button
+                >
                 <Button :disabled="busy" @click="confirm">Adiar post</Button>
             </DialogFooter>
         </DialogContent>

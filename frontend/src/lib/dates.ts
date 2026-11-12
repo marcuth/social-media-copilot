@@ -38,13 +38,28 @@ export function monthGrid(month: Date): Date[] {
     return Array.from({ length: 42 }, (_, i) => addDays(start, i))
 }
 
-const fmtTime = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" })
-const fmtDay = new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "numeric", month: "short" })
-const fmtLong = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" })
-const fmtMonth = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" })
+const fmtTime = new Intl.DateTimeFormat("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+})
+const fmtDay = new Intl.DateTimeFormat("pt-BR", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+})
+const fmtLong = new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+})
+const fmtMonth = new Intl.DateTimeFormat("pt-BR", {
+    month: "long",
+    year: "numeric",
+})
 
 export const formatTime = (d: Date): string => fmtTime.format(d)
-export const formatDay = (d: Date): string => fmtDay.format(d).replace(/\./g, "")
+export const formatDay = (d: Date): string =>
+    fmtDay.format(d).replace(/\./g, "")
 export const formatLongDay = (d: Date): string => fmtLong.format(d)
 export function formatMonth(d: Date): string {
     const s = fmtMonth.format(d)
@@ -57,7 +72,10 @@ export function formatSchedule(s: string | null | undefined): string {
     return `${formatDay(d)}, ${formatTime(d)}`
 }
 
-export function isOverdue(s: string | null | undefined, status: string): boolean {
+export function isOverdue(
+    s: string | null | undefined,
+    status: string,
+): boolean {
     const d = parseSchedule(s)
     return !!d && status !== "published" && d.getTime() < Date.now()
 }

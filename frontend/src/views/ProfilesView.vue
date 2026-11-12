@@ -1,20 +1,32 @@
 <script setup lang="ts">
+import { Plus, Tags, Trash2, Users } from "@lucide/vue"
 import { computed, reactive, ref } from "vue"
 import { useRoute } from "vue-router"
-import { Plus, Tags, Trash2, Users } from "@lucide/vue"
 
-import AppSelect from "@/components/AppSelect.vue"
-import PageHeader from "@/components/PageHeader.vue"
+import {
+    ProfileService,
+    normProfile,
+    type Profile,
+    type ProfilePlatform,
+    type Theme,
+} from "@/lib/api"
+import {
+    PROFILE_COLORS,
+    refreshProfiles,
+    setActiveProfile,
+    store,
+    themesOf,
+} from "@/lib/store"
 import PlatformIcon from "@/components/PlatformIcon.vue"
-import { Button } from "@/components/ui/button"
+import PageHeader from "@/components/PageHeader.vue"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Textarea } from "@/components/ui/textarea"
+import AppSelect from "@/components/AppSelect.vue"
+import { Button } from "@/components/ui/button"
+import { toast, toastError } from "@/lib/toast"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { ProfileService, normProfile, type Profile, type ProfilePlatform, type Theme } from "@/lib/api"
 import { confirmDialog } from "@/lib/confirm"
-import { PROFILE_COLORS, refreshProfiles, setActiveProfile, store, themesOf } from "@/lib/store"
-import { toast, toastError } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 
 type Draft = Profile & { platforms: ProfilePlatform[] }
@@ -42,7 +54,9 @@ function load(id: number | null): Draft {
     return p ? JSON.parse(JSON.stringify(normProfile(p))) : blank()
 }
 
-const initial = route.query.new ? null : (store.activeProfileId ?? store.profiles[0]?.id ?? null)
+const initial = route.query.new
+    ? null
+    : (store.activeProfileId ?? store.profiles[0]?.id ?? null)
 const selectedId = ref<number | null>(initial)
 const draft = ref<Draft>(load(initial))
 const saving = ref(false)
@@ -52,7 +66,9 @@ function select(id: number | null): void {
     draft.value = load(id)
 }
 
-const handles = computed(() => Object.fromEntries(draft.value.platforms.map((p) => [p.platform, p])))
+const handles = computed(() =>
+    Object.fromEntries(draft.value.platforms.map((p) => [p.platform, p])),
+)
 
 function togglePlatform(id: string): void {
     const list = draft.value.platforms
@@ -98,15 +114,25 @@ async function remove(): Promise<void> {
 
 // ── Themes ───────────────────────────────────────────────────────────────
 const themes = computed(() => themesOf(draft.value.id))
-const newTheme = reactive({ name: "", description: "", color: PROFILE_COLORS[1] })
+const newTheme = reactive({
+    name: "",
+    description: "",
+    color: PROFILE_COLORS[1],
+})
 
 async function addTheme(): Promise<void> {
     if (!newTheme.name.trim()) return
     try {
-        await ProfileService.SaveTheme({ id: 0, profileId: draft.value.id, ...newTheme, createdAt: "" })
+        await ProfileService.SaveTheme({
+            id: 0,
+            profileId: draft.value.id,
+            ...newTheme,
+            createdAt: "",
+        })
         newTheme.name = ""
         newTheme.description = ""
-        newTheme.color = PROFILE_COLORS[(themes.value.length + 2) % PROFILE_COLORS.length]
+        newTheme.color =
+            PROFILE_COLORS[(themes.value.length + 2) % PROFILE_COLORS.length]
         await refreshProfiles()
     } catch (e) {
         toastError(e)
@@ -155,12 +181,16 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
             :icon="Users"
         >
             <template #actions>
-                <Button variant="outline" @click="select(null)"><Plus /> Novo perfil</Button>
+                <Button variant="outline" @click="select(null)"
+                    ><Plus /> Novo perfil</Button
+                >
             </template>
         </PageHeader>
 
         <div class="flex-1 overflow-y-auto px-8 py-6">
-            <div class="mx-auto grid max-w-6xl items-start gap-6 lg:grid-cols-[260px_1fr]">
+            <div
+                class="mx-auto grid max-w-6xl items-start gap-6 lg:grid-cols-[260px_1fr]"
+            >
                 <nav class="flex flex-col gap-1" aria-label="Perfis">
                     <button
                         v-for="p in store.profiles"
@@ -168,7 +198,9 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                         :class="
                             cn(
                                 'flex cursor-pointer items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-left transition-colors',
-                                p.id === selectedId ? 'border-primary bg-primary/10' : 'border-transparent hover:bg-accent/60',
+                                p.id === selectedId
+                                    ? 'border-primary bg-primary/10'
+                                    : 'border-transparent hover:bg-accent/60',
                             )
                         "
                         @click="select(p.id)"
@@ -179,10 +211,22 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                             >{{ p.name.charAt(0).toUpperCase() }}</span
                         >
                         <span class="min-w-0">
-                            <span class="block truncate text-sm font-semibold">{{ p.name }}</span>
+                            <span
+                                class="block truncate text-sm font-semibold"
+                                >{{ p.name }}</span
+                            >
                             <span class="flex gap-1 pt-0.5">
-                                <PlatformIcon v-for="pp in p.platforms" :id="pp.platform" :key="pp.platform" :size="12" />
-                                <span v-if="!p.platforms.length" class="text-xs text-muted-foreground">Sem plataformas</span>
+                                <PlatformIcon
+                                    v-for="pp in p.platforms"
+                                    :id="pp.platform"
+                                    :key="pp.platform"
+                                    :size="12"
+                                />
+                                <span
+                                    v-if="!p.platforms.length"
+                                    class="text-xs text-muted-foreground"
+                                    >Sem plataformas</span
+                                >
                             </span>
                         </span>
                     </button>
@@ -190,8 +234,13 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                         v-if="selectedId === null"
                         class="flex items-center gap-3 rounded-xl border-2 border-primary bg-primary/10 px-3 py-2.5"
                     >
-                        <span class="size-8 shrink-0 rounded-md" :style="{ background: draft.color }"></span>
-                        <span class="truncate text-sm font-semibold">{{ draft.name || "Novo perfil" }}</span>
+                        <span
+                            class="size-8 shrink-0 rounded-md"
+                            :style="{ background: draft.color }"
+                        ></span>
+                        <span class="truncate text-sm font-semibold">{{
+                            draft.name || "Novo perfil"
+                        }}</span>
                     </div>
                 </nav>
 
@@ -217,7 +266,8 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                                         :class="
                                             cn(
                                                 'size-6 cursor-pointer rounded-full transition-shadow',
-                                                draft.color.toLowerCase() === c.toLowerCase() &&
+                                                draft.color.toLowerCase() ===
+                                                    c.toLowerCase() &&
                                                     'ring-2 ring-foreground ring-offset-2 ring-offset-card',
                                             )
                                         "
@@ -246,7 +296,11 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                         <div class="grid gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="niche">Nicho</Label>
-                                <Input id="niche" v-model="draft.niche" placeholder="Ex.: culinária vegana rápida" />
+                                <Input
+                                    id="niche"
+                                    v-model="draft.niche"
+                                    placeholder="Ex.: culinária vegana rápida"
+                                />
                             </div>
                             <div class="space-y-2">
                                 <Label for="audience">Público</Label>
@@ -258,32 +312,52 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                             </div>
                             <div class="space-y-2">
                                 <Label for="tone">Tom de voz</Label>
-                                <Input id="tone" v-model="draft.tone" placeholder="Ex.: descontraído, direto, com humor" />
+                                <Input
+                                    id="tone"
+                                    v-model="draft.tone"
+                                    placeholder="Ex.: descontraído, direto, com humor"
+                                />
                             </div>
                             <div class="space-y-2">
                                 <Label>Idioma do conteúdo</Label>
-                                <AppSelect v-model="draft.language" :options="LANGUAGES" label="Idioma do conteúdo" />
+                                <AppSelect
+                                    v-model="draft.language"
+                                    :options="LANGUAGES"
+                                    label="Idioma do conteúdo"
+                                />
                             </div>
                         </div>
                         <p class="text-xs text-muted-foreground">
-                            Nicho, público e tom de voz dão contexto para a IA escrever como o perfil.
+                            Nicho, público e tom de voz dão contexto para a IA
+                            escrever como o perfil.
                         </p>
 
                         <div class="space-y-2">
                             <Label>Plataformas</Label>
-                            <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                            <div
+                                class="grid gap-2 sm:grid-cols-2 xl:grid-cols-3"
+                            >
                                 <div
                                     v-for="pl in store.catalog.platforms"
                                     :key="pl.id"
                                     :class="
                                         cn(
                                             'space-y-2 rounded-xl border-2 p-3 transition-colors',
-                                            handles[pl.id] ? 'border-primary bg-primary/5' : 'border-border/50',
+                                            handles[pl.id]
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-border/50',
                                         )
                                     "
                                 >
-                                    <Label class="flex cursor-pointer items-center gap-2">
-                                        <Checkbox :model-value="!!handles[pl.id]" @update:model-value="togglePlatform(pl.id)" />
+                                    <Label
+                                        class="flex cursor-pointer items-center gap-2"
+                                    >
+                                        <Checkbox
+                                            :model-value="!!handles[pl.id]"
+                                            @update:model-value="
+                                                togglePlatform(pl.id)
+                                            "
+                                        />
                                         <PlatformIcon :id="pl.id" />
                                         {{ pl.name }}
                                     </Label>
@@ -308,21 +382,36 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                             >
                                 <Trash2 /> Excluir perfil
                             </Button>
-                            <Button type="submit" class="ml-auto" :disabled="saving">
-                                {{ draft.id ? "Salvar perfil" : "Criar perfil" }}
+                            <Button
+                                type="submit"
+                                class="ml-auto"
+                                :disabled="saving"
+                            >
+                                {{
+                                    draft.id ? "Salvar perfil" : "Criar perfil"
+                                }}
                             </Button>
                         </div>
                     </form>
 
                     <section v-if="draft.id" :class="cn(card, 'space-y-4')">
                         <div>
-                            <h2 class="flex items-center gap-2 font-heading text-lg font-bold"><Tags class="size-5" /> Temas</h2>
+                            <h2
+                                class="flex items-center gap-2 font-heading text-lg font-bold"
+                            >
+                                <Tags class="size-5" /> Temas
+                            </h2>
                             <p class="text-sm text-muted-foreground">
-                                Os pilares de conteúdo do perfil. Servem de filtro e de contexto para a IA.
+                                Os pilares de conteúdo do perfil. Servem de
+                                filtro e de contexto para a IA.
                             </p>
                         </div>
                         <ul class="space-y-2">
-                            <li v-for="t in themes" :key="t.id" class="grid grid-cols-[32px_1fr_1.6fr_auto] items-center gap-2">
+                            <li
+                                v-for="t in themes"
+                                :key="t.id"
+                                class="grid grid-cols-[32px_1fr_1.6fr_auto] items-center gap-2"
+                            >
                                 <input
                                     v-model="t.color"
                                     type="color"
@@ -330,7 +419,11 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                                     :aria-label="`Cor do tema ${t.name}`"
                                     @change="updateTheme(t)"
                                 />
-                                <Input v-model="t.name" aria-label="Nome do tema" @change="updateTheme(t)" />
+                                <Input
+                                    v-model="t.name"
+                                    aria-label="Nome do tema"
+                                    @change="updateTheme(t)"
+                                />
                                 <Input
                                     v-model="t.description"
                                     placeholder="Descrição (opcional)"
@@ -347,7 +440,9 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                                     <Trash2 />
                                 </Button>
                             </li>
-                            <li class="grid grid-cols-[32px_1fr_1.6fr_auto] items-center gap-2">
+                            <li
+                                class="grid grid-cols-[32px_1fr_1.6fr_auto] items-center gap-2"
+                            >
                                 <input
                                     v-model="newTheme.color"
                                     type="color"
@@ -366,7 +461,11 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                                     aria-label="Descrição do novo tema"
                                     @keydown.enter.prevent="addTheme"
                                 />
-                                <Button variant="outline" :disabled="!newTheme.name.trim()" @click="addTheme">
+                                <Button
+                                    variant="outline"
+                                    :disabled="!newTheme.name.trim()"
+                                    @click="addTheme"
+                                >
                                     <Plus /> Adicionar
                                 </Button>
                             </li>

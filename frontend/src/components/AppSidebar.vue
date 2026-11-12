@@ -1,8 +1,15 @@
 <script setup lang="ts">
+import {
+    CalendarDays,
+    Columns3,
+    Layers,
+    Lightbulb,
+    Plus,
+    Settings,
+    Users,
+} from "@lucide/vue"
 import { useRoute } from "vue-router"
-import { CalendarDays, Columns3, Layers, Lightbulb, Plus, Settings, Users } from "@lucide/vue"
 
-import { Button } from "@/components/ui/button"
 import {
     Sidebar,
     SidebarContent,
@@ -17,15 +24,41 @@ import {
     SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { setActiveProfile, store } from "@/lib/store"
+import { Button } from "@/components/ui/button"
 
 const route = useRoute()
 
 const nav = [
-    { to: "/", label: "Calendário", icon: CalendarDays, match: (p: string) => p === "/" },
-    { to: "/pipeline", label: "Produção", icon: Columns3, match: (p: string) => p.startsWith("/pipeline") },
-    { to: "/ideas", label: "Ideias com IA", icon: Lightbulb, match: (p: string) => p.startsWith("/ideas") },
-    { to: "/profiles", label: "Perfis e temas", icon: Users, match: (p: string) => p.startsWith("/profiles") },
-    { to: "/settings", label: "Configurações", icon: Settings, match: (p: string) => p.startsWith("/settings") },
+    {
+        to: "/",
+        label: "Calendário",
+        icon: CalendarDays,
+        match: (p: string) => p === "/",
+    },
+    {
+        to: "/pipeline",
+        label: "Produção",
+        icon: Columns3,
+        match: (p: string) => p.startsWith("/pipeline"),
+    },
+    {
+        to: "/ideas",
+        label: "Ideias com IA",
+        icon: Lightbulb,
+        match: (p: string) => p.startsWith("/ideas"),
+    },
+    {
+        to: "/profiles",
+        label: "Perfis e temas",
+        icon: Users,
+        match: (p: string) => p.startsWith("/profiles"),
+    },
+    {
+        to: "/settings",
+        label: "Configurações",
+        icon: Settings,
+        match: (p: string) => p.startsWith("/settings"),
+    },
 ]
 </script>
 
@@ -35,7 +68,9 @@ const nav = [
             <div class="flex items-center gap-3">
                 <img src="/icon.png" alt="" class="size-8 shrink-0" />
                 <div class="flex flex-col group-data-[collapsible=icon]:hidden">
-                    <span class="font-heading text-sm leading-tight font-bold">Social Media Copilot</span>
+                    <span class="font-heading text-sm leading-tight font-bold"
+                        >Social Media Copilot</span
+                    >
                     <span class="text-xs text-muted-foreground">v0.1.0</span>
                 </div>
             </div>
@@ -49,14 +84,24 @@ const nav = [
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton as-child tooltip="Novo post">
-                                <RouterLink :to="{ name: 'post', params: { id: 'new' } }" class="font-semibold text-primary">
+                                <RouterLink
+                                    :to="{
+                                        name: 'post',
+                                        params: { id: 'new' },
+                                    }"
+                                    class="font-semibold text-primary"
+                                >
                                     <Plus />
                                     <span>Novo post</span>
                                 </RouterLink>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem v-for="item in nav" :key="item.to">
-                            <SidebarMenuButton as-child :is-active="item.match(route.path)" :tooltip="item.label">
+                            <SidebarMenuButton
+                                as-child
+                                :is-active="item.match(route.path)"
+                                :tooltip="item.label"
+                            >
                                 <RouterLink :to="item.to">
                                     <component :is="item.icon" />
                                     <span>{{ item.label }}</span>
@@ -86,7 +131,10 @@ const nav = [
                                 <span>Todos os perfis</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                        <SidebarMenuItem v-for="p in store.profiles" :key="p.id">
+                        <SidebarMenuItem
+                            v-for="p in store.profiles"
+                            :key="p.id"
+                        >
                             <SidebarMenuButton
                                 :is-active="store.activeProfileId === p.id"
                                 :tooltip="p.name"
@@ -105,9 +153,19 @@ const nav = [
                         v-if="store.ready && !store.profiles.length"
                         class="px-2 py-4 text-center group-data-[collapsible=icon]:hidden"
                     >
-                        <p class="text-xs text-muted-foreground">Nenhum perfil ainda</p>
-                        <Button variant="outline" size="sm" class="mt-2 h-7 text-xs" as-child>
-                            <RouterLink to="/profiles?new=1"><Plus class="size-3" /> Criar perfil</RouterLink>
+                        <p class="text-xs text-muted-foreground">
+                            Nenhum perfil ainda
+                        </p>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="mt-2 h-7 text-xs"
+                            as-child
+                        >
+                            <RouterLink to="/profiles?new=1"
+                                ><Plus class="size-3" /> Criar
+                                perfil</RouterLink
+                            >
                         </Button>
                     </div>
                 </SidebarGroupContent>

@@ -1,7 +1,15 @@
-import { reactive } from "vue"
 import { Events } from "@wailsio/runtime"
+import { reactive } from "vue"
 
-import { AiDelta, ChatService, errorMessage, isCancel, type ChatMessage, type ChatSession, type Post } from "./api"
+import {
+    AiDelta,
+    ChatService,
+    errorMessage,
+    isCancel,
+    type ChatMessage,
+    type ChatSession,
+    type Post,
+} from "./api"
 import { store } from "./store"
 
 /** App-wide state of the copilot chat panel. */

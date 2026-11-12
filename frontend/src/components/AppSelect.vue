@@ -1,7 +1,13 @@
 <script setup lang="ts" generic="T extends string | number | null">
 import { computed } from "vue"
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
 // shadcn Select keyed by index, so options can carry null or numeric values.
@@ -37,11 +43,17 @@ const key = computed({
 
 <template>
     <Select v-model="key">
-        <SelectTrigger :size="size" :aria-label="label" :class="cn('w-full', props.class)">
+        <SelectTrigger
+            :size="size"
+            :aria-label="label"
+            :class="cn('w-full', props.class)"
+        >
             <SelectValue :placeholder="placeholder" />
         </SelectTrigger>
         <SelectContent>
-            <SelectItem v-for="(o, i) in options" :key="i" :value="String(i)">{{ o.label }}</SelectItem>
+            <SelectItem v-for="(o, i) in options" :key="i" :value="String(i)">{{
+                o.label
+            }}</SelectItem>
         </SelectContent>
     </Select>
 </template>

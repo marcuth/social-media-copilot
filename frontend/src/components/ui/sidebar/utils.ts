@@ -10,11 +10,11 @@ export const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 export const SIDEBAR_MOBILE_BREAKPOINT = 768
 
 export const [useSidebar, provideSidebarContext] = createContext<{
-  state: ComputedRef<"expanded" | "collapsed">
-  open: Ref<boolean>
-  setOpen: (value: boolean) => void
-  isMobile: Ref<boolean>
-  openMobile: Ref<boolean>
-  setOpenMobile: (value: boolean) => void
-  toggleSidebar: () => void
+    state: ComputedRef<"expanded" | "collapsed">
+    open: Ref<boolean>
+    setOpen: (value: boolean) => void
+    isMobile: Ref<boolean>
+    openMobile: Ref<boolean>
+    setOpenMobile: (value: boolean) => void
+    toggleSidebar: () => void
 }>("Sidebar")

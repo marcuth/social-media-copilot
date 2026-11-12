@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { ref } from "vue"
 import { Plus, X } from "@lucide/vue"
+import { ref } from "vue"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 
-const props = withDefaults(defineProps<{ placeholder?: string; prefix?: string; label: string }>(), {
-    placeholder: "",
-    prefix: "",
-})
+const props = withDefaults(
+    defineProps<{ placeholder?: string; prefix?: string; label: string }>(),
+    {
+        placeholder: "",
+        prefix: "",
+    },
+)
 const model = defineModel<string[]>({ required: true })
 
 const draft = ref("")
@@ -62,7 +65,13 @@ function onKey(e: KeyboardEvent): void {
                 @keydown="onKey"
                 @blur="commit"
             />
-            <Button type="button" variant="outline" class="shrink-0" :disabled="!draft.trim()" @click="commit">
+            <Button
+                type="button"
+                variant="outline"
+                class="shrink-0"
+                :disabled="!draft.trim()"
+                @click="commit"
+            >
                 <Plus class="size-3.5" /> Adicionar
             </Button>
         </div>

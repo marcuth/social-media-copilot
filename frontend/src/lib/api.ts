@@ -1,7 +1,7 @@
 // Single entry point to the generated Wails bindings, plus small helpers that
 // normalise Go nil slices (sent as null) into empty arrays.
-import type * as Models from "../../bindings/github.com/marcuth/social-media-copilot/internal/models/models"
 import type * as Catalog from "../../bindings/github.com/marcuth/social-media-copilot/internal/catalog/models"
+import type * as Models from "../../bindings/github.com/marcuth/social-media-copilot/internal/models/models"
 import type * as Svc from "../../bindings/github.com/marcuth/social-media-copilot/internal/services/models"
 
 export {
@@ -52,7 +52,9 @@ export function normPost(p: Post): PostN {
     }
 }
 
-export function normProfile(p: Profile): Profile & { platforms: ProfilePlatform[] } {
+export function normProfile(
+    p: Profile,
+): Profile & { platforms: ProfilePlatform[] } {
     return { ...p, platforms: p.platforms ?? [] }
 }
 
@@ -73,12 +75,16 @@ export function emptyFilter(patch: Partial<PostFilter> = {}): PostFilter {
 /** Human message from a rejected binding call. */
 export function errorMessage(e: unknown): string {
     if (e instanceof Error) return e.message
-    if (typeof e === "object" && e && "message" in e) return String((e as { message: unknown }).message)
+    if (typeof e === "object" && e && "message" in e)
+        return String((e as { message: unknown }).message)
     return String(e)
 }
 
 /** True when a cancellable call was cancelled by us. */
 export function isCancel(e: unknown): boolean {
-    const name = typeof e === "object" && e && "name" in e ? String((e as { name: unknown }).name) : ""
+    const name =
+        typeof e === "object" && e && "name" in e
+            ? String((e as { name: unknown }).name)
+            : ""
     return name === "CancelError" || /cancel/i.test(errorMessage(e))
 }

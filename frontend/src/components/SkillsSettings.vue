@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue"
-import { BookOpen } from "@lucide/vue"
 import { Browser } from "@wailsio/runtime"
+import { BookOpen } from "@lucide/vue"
 
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 import MarkdownView from "@/components/MarkdownView.vue"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Switch } from "@/components/ui/switch"
 import { SkillService, type SkillInfo } from "@/lib/api"
+import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { Badge } from "@/components/ui/badge"
 import { toastError } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 
@@ -18,7 +24,8 @@ const readingText = ref("")
 
 const groups = computed(() => {
     const map = new Map<string, SkillInfo[]>()
-    for (const s of skills.value) map.set(s.source, [...(map.get(s.source) ?? []), s])
+    for (const s of skills.value)
+        map.set(s.source, [...(map.get(s.source) ?? []), s])
     return [...map.entries()]
 })
 
@@ -57,15 +64,22 @@ async function read(s: SkillInfo): Promise<void> {
         <div>
             <h2 class="font-heading text-lg font-bold">Skills</h2>
             <p class="text-sm text-muted-foreground">
-                Manuais de método que a IA segue automaticamente em cada tarefa. No chat, ela carrega a skill quando o
-                assunto pede. Desligue as que não quiser usar.
+                Manuais de método que a IA segue automaticamente em cada tarefa.
+                No chat, ela carrega a skill quando o assunto pede. Desligue as
+                que não quiser usar.
             </p>
         </div>
 
-        <section v-for="[source, list] in groups" :key="source" class="space-y-3">
+        <section
+            v-for="[source, list] in groups"
+            :key="source"
+            class="space-y-3"
+        >
             <div class="flex items-center gap-2">
                 <h3 class="text-sm font-semibold">{{ source }}</h3>
-                <Badge v-if="list[0].license" variant="outline">{{ list[0].license }}</Badge>
+                <Badge v-if="list[0].license" variant="outline">{{
+                    list[0].license
+                }}</Badge>
             </div>
             <ul class="space-y-3">
                 <li
@@ -74,17 +88,25 @@ async function read(s: SkillInfo): Promise<void> {
                     :class="
                         cn(
                             'flex items-start gap-4 rounded-xl border bg-card p-4 shadow-xs transition-opacity',
-                            s.enabled ? 'border-border/60' : 'border-border/40 opacity-60',
+                            s.enabled
+                                ? 'border-border/60'
+                                : 'border-border/40 opacity-60',
                         )
                     "
                 >
                     <div class="min-w-0 flex-1 space-y-1">
                         <p class="font-semibold">{{ s.name }}</p>
-                        <p class="text-sm text-muted-foreground">{{ s.description }}</p>
-                        <p class="text-xs text-muted-foreground">{{ s.appliesTo }}</p>
+                        <p class="text-sm text-muted-foreground">
+                            {{ s.description }}
+                        </p>
+                        <p class="text-xs text-muted-foreground">
+                            {{ s.appliesTo }}
+                        </p>
                     </div>
                     <div class="flex shrink-0 items-center gap-2">
-                        <Button variant="ghost" size="sm" @click="read(s)"><BookOpen /> Ler</Button>
+                        <Button variant="ghost" size="sm" @click="read(s)"
+                            ><BookOpen /> Ler</Button
+                        >
                         <Switch
                             :model-value="s.enabled"
                             :aria-label="`${s.enabled ? 'Desligar' : 'Ligar'} ${s.name}`"
@@ -97,12 +119,16 @@ async function read(s: SkillInfo): Promise<void> {
                 Copiadas sem alterações de
                 <button
                     class="cursor-pointer font-medium text-primary underline-offset-4 hover:underline"
-                    @click="Browser.OpenURL('https://github.com/sergebulaev/instagram-skills')"
+                    @click="
+                        Browser.OpenURL(
+                            'https://github.com/sergebulaev/instagram-skills',
+                        )
+                    "
                 >
                     sergebulaev/instagram-skills
                 </button>
-                (licença MIT, © 2026 Sergey Bulaev). Passos de publicação e de ferramentas externas são ignorados dentro
-                do app.
+                (licença MIT, © 2026 Sergey Bulaev). Passos de publicação e de
+                ferramentas externas são ignorados dentro do app.
             </p>
         </section>
 
@@ -110,9 +136,13 @@ async function read(s: SkillInfo): Promise<void> {
             <DialogContent class="flex max-h-[85vh] flex-col sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>{{ reading?.name }}</DialogTitle>
-                    <DialogDescription>{{ reading?.appliesTo }}</DialogDescription>
+                    <DialogDescription>{{
+                        reading?.appliesTo
+                    }}</DialogDescription>
                 </DialogHeader>
-                <div class="min-h-0 flex-1 overflow-y-auto rounded-lg bg-muted p-4">
+                <div
+                    class="min-h-0 flex-1 overflow-y-auto rounded-lg bg-muted p-4"
+                >
                     <MarkdownView :source="readingText || 'Carregando…'" />
                 </div>
             </DialogContent>

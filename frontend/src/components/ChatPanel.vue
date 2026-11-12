@@ -1,26 +1,51 @@
 <script setup lang="ts">
+import {
+    Bot,
+    History,
+    Loader,
+    Maximize2,
+    Minimize2,
+    Plus,
+    Send,
+    Sparkles,
+    Square,
+    Trash2,
+    User,
+} from "@lucide/vue"
 import { computed, nextTick, onMounted, ref, watch } from "vue"
-import { Bot, History, Loader, Maximize2, Minimize2, Plus, Send, Sparkles, Square, Trash2, User } from "@lucide/vue"
 
-import MarkdownView from "@/components/MarkdownView.vue"
-import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupTextarea } from "@/components/ui/input-group"
-import type { ChatMessage } from "@/lib/api"
-import { chat, deleteSession, newSession, sendMessage, stopStreaming, switchSession } from "@/lib/chat"
-import { confirmDialog } from "@/lib/confirm"
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupTextarea,
+} from "@/components/ui/input-group"
+import {
+    chat,
+    deleteSession,
+    newSession,
+    sendMessage,
+    stopStreaming,
+    switchSession,
+} from "@/lib/chat"
+import MarkdownView from "@/components/MarkdownView.vue"
 import { profileById, store } from "@/lib/store"
+import { Button } from "@/components/ui/button"
+import { confirmDialog } from "@/lib/confirm"
+import type { ChatMessage } from "@/lib/api"
 import { cn } from "@/lib/utils"
 
 const scroller = ref<HTMLElement | null>(null)
 
 const contextLabel = computed(() => {
-    if (chat.post) return chat.post.title ? `Post “${chat.post.title}”` : "Novo post"
+    if (chat.post)
+        return chat.post.title ? `Post “${chat.post.title}”` : "Novo post"
     return profileById(store.activeProfileId)?.name ?? "Todos os perfis"
 })
 
@@ -31,7 +56,10 @@ const quickActions = computed(() =>
                   label: "🎬 Melhorar o roteiro",
                   prompt: "Revise o roteiro deste post e reescreva o que puder ficar mais forte, explicando as mudanças principais.",
               },
-              { label: "🪝 5 ganchos", prompt: "Sugira 5 ganchos diferentes para os primeiros segundos deste post." },
+              {
+                  label: "🪝 5 ganchos",
+                  prompt: "Sugira 5 ganchos diferentes para os primeiros segundos deste post.",
+              },
               {
                   label: "🏷️ Títulos alternativos",
                   prompt: "Sugira 5 títulos alternativos para este post, adequados às plataformas selecionadas.",
@@ -107,16 +135,23 @@ const streamingMessage = computed<ChatMessage>(() => ({
 
 <template>
     <!-- Header -->
-    <div class="flex shrink-0 flex-col gap-1.5 border-b border-border/50 p-4 pr-12">
+    <div
+        class="flex shrink-0 flex-col gap-1.5 border-b border-border/50 p-4 pr-12"
+    >
         <div class="flex items-center justify-between">
             <div class="flex min-w-0 items-center gap-2">
-                <div class="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary">
+                <div
+                    class="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary"
+                >
                     <Bot class="size-4 text-primary-foreground" />
                 </div>
                 <div class="min-w-0">
                     <p class="text-sm leading-tight font-semibold">Copilot</p>
                     <p class="truncate text-xs text-muted-foreground">
-                        Contexto: <span class="font-medium text-primary">{{ contextLabel }}</span>
+                        Contexto:
+                        <span class="font-medium text-primary">{{
+                            contextLabel
+                        }}</span>
                     </p>
                 </div>
             </div>
@@ -134,21 +169,35 @@ const streamingMessage = computed<ChatMessage>(() => ({
                             <History class="size-4" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" class="max-h-72 w-72 overflow-y-auto">
-                        <p v-if="!chat.sessions.length" class="px-2 py-1.5 text-xs text-muted-foreground">
+                    <DropdownMenuContent
+                        align="end"
+                        class="max-h-72 w-72 overflow-y-auto"
+                    >
+                        <p
+                            v-if="!chat.sessions.length"
+                            class="px-2 py-1.5 text-xs text-muted-foreground"
+                        >
                             Nenhuma conversa ainda.
                         </p>
                         <DropdownMenuItem
                             v-for="s in chat.sessions"
                             :key="s.id"
-                            :class="cn('group justify-between', s.id === chat.activeSessionId && 'bg-accent')"
+                            :class="
+                                cn(
+                                    'group justify-between',
+                                    s.id === chat.activeSessionId &&
+                                        'bg-accent',
+                                )
+                            "
                             @select="switchSession(s.id)"
                         >
                             <span class="truncate text-xs">{{ s.title }}</span>
                             <button
                                 class="cursor-pointer opacity-0 group-hover:opacity-70 hover:text-destructive hover:opacity-100"
                                 :aria-label="`Excluir ${s.title}`"
-                                @click.stop.prevent="removeSession(s.id, s.title)"
+                                @click.stop.prevent="
+                                    removeSession(s.id, s.title)
+                                "
                             >
                                 <Trash2 class="size-3.5" />
                             </button>
@@ -170,11 +219,16 @@ const streamingMessage = computed<ChatMessage>(() => ({
                     variant="ghost"
                     size="icon"
                     class="size-7"
-                    :aria-label="chat.expanded ? 'Recolher chat' : 'Expandir chat'"
+                    :aria-label="
+                        chat.expanded ? 'Recolher chat' : 'Expandir chat'
+                    "
                     :title="chat.expanded ? 'Recolher chat' : 'Expandir chat'"
                     @click="chat.expanded = !chat.expanded"
                 >
-                    <component :is="chat.expanded ? Minimize2 : Maximize2" class="size-4" />
+                    <component
+                        :is="chat.expanded ? Minimize2 : Maximize2"
+                        class="size-4"
+                    />
                 </Button>
             </div>
         </div>
@@ -182,19 +236,41 @@ const streamingMessage = computed<ChatMessage>(() => ({
 
     <!-- Messages -->
     <div ref="scroller" class="min-h-0 flex-1 overflow-y-auto">
-        <div :class="cn('flex flex-col gap-4 px-4 py-4', chat.expanded && 'mx-auto w-full max-w-3xl')">
-            <div v-if="!chat.messages.length && !chat.streaming" class="flex flex-col items-center gap-4 py-8 text-center">
-                <div class="flex size-12 items-center justify-center rounded-2xl bg-primary/10">
+        <div
+            :class="
+                cn(
+                    'flex flex-col gap-4 px-4 py-4',
+                    chat.expanded && 'mx-auto w-full max-w-3xl',
+                )
+            "
+        >
+            <div
+                v-if="!chat.messages.length && !chat.streaming"
+                class="flex flex-col items-center gap-4 py-8 text-center"
+            >
+                <div
+                    class="flex size-12 items-center justify-center rounded-2xl bg-primary/10"
+                >
                     <Sparkles class="size-6 text-primary" />
                 </div>
                 <div>
                     <p class="text-sm font-semibold">Olá! Sou seu Copilot</p>
-                    <p class="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        Conheço seus perfis, a agenda e o post que estiver aberto. Peça ideias, roteiros, legendas,
-                        críticas ou ajuda com o calendário.
+                    <p
+                        class="mt-1 text-xs leading-relaxed text-muted-foreground"
+                    >
+                        Conheço seus perfis, a agenda e o post que estiver
+                        aberto. Peça ideias, roteiros, legendas, críticas ou
+                        ajuda com o calendário.
                     </p>
                 </div>
-                <div :class="cn('grid w-full gap-2', chat.expanded ? 'grid-cols-2' : 'grid-cols-1')">
+                <div
+                    :class="
+                        cn(
+                            'grid w-full gap-2',
+                            chat.expanded ? 'grid-cols-2' : 'grid-cols-1',
+                        )
+                    "
+                >
                     <Button
                         v-for="action in quickActions"
                         :key="action.label"
@@ -209,7 +285,9 @@ const streamingMessage = computed<ChatMessage>(() => ({
             </div>
 
             <div
-                v-for="msg in chat.streaming && chat.streamingContent ? [...chat.messages, streamingMessage] : chat.messages"
+                v-for="msg in chat.streaming && chat.streamingContent
+                    ? [...chat.messages, streamingMessage]
+                    : chat.messages"
                 :key="msg.id"
                 :data-align="msg.role === 'assistant' ? 'start' : 'end'"
                 class="group/message flex w-full min-w-0 gap-2 text-sm data-[align=end]:flex-row-reverse"
@@ -224,30 +302,57 @@ const streamingMessage = computed<ChatMessage>(() => ({
                         )
                     "
                 >
-                    <component :is="msg.role === 'assistant' ? Bot : User" class="size-3" />
+                    <component
+                        :is="msg.role === 'assistant' ? Bot : User"
+                        class="size-3"
+                    />
                 </div>
-                <div class="flex w-full min-w-0 flex-col gap-1 group-data-[align=end]/message:items-end">
+                <div
+                    class="flex w-full min-w-0 flex-col gap-1 group-data-[align=end]/message:items-end"
+                >
                     <div
                         :class="
                             cn(
                                 'w-fit max-w-[90%] min-w-0 overflow-hidden rounded-xl px-3 py-2 text-sm leading-relaxed break-words',
-                                msg.role === 'assistant' ? 'bg-muted' : 'bg-primary text-primary-foreground',
+                                msg.role === 'assistant'
+                                    ? 'bg-muted'
+                                    : 'bg-primary text-primary-foreground',
                             )
                         "
                     >
-                        <MarkdownView v-if="msg.role === 'assistant'" :source="msg.content" class="[&>*:last-child]:mb-0" />
-                        <p v-else class="whitespace-pre-wrap">{{ msg.content }}</p>
-                        <span v-if="msg.id === 0" class="ml-1 inline-flex items-center gap-0.5">
-                            <span class="size-1 animate-bounce rounded-full bg-current [animation-delay:-0.3s]"></span>
-                            <span class="size-1 animate-bounce rounded-full bg-current [animation-delay:-0.15s]"></span>
-                            <span class="size-1 animate-bounce rounded-full bg-current"></span>
+                        <MarkdownView
+                            v-if="msg.role === 'assistant'"
+                            :source="msg.content"
+                            class="[&>*:last-child]:mb-0"
+                        />
+                        <p v-else class="whitespace-pre-wrap">
+                            {{ msg.content }}
+                        </p>
+                        <span
+                            v-if="msg.id === 0"
+                            class="ml-1 inline-flex items-center gap-0.5"
+                        >
+                            <span
+                                class="size-1 animate-bounce rounded-full bg-current [animation-delay:-0.3s]"
+                            ></span>
+                            <span
+                                class="size-1 animate-bounce rounded-full bg-current [animation-delay:-0.15s]"
+                            ></span>
+                            <span
+                                class="size-1 animate-bounce rounded-full bg-current"
+                            ></span>
                         </span>
                     </div>
-                    <p v-if="msg.model" class="px-1 text-[10px] opacity-60">{{ msg.model }}</p>
+                    <p v-if="msg.model" class="px-1 text-[10px] opacity-60">
+                        {{ msg.model }}
+                    </p>
                 </div>
             </div>
 
-            <div v-if="chat.streaming && !chat.streamingContent" class="flex items-center gap-2 text-muted-foreground">
+            <div
+                v-if="chat.streaming && !chat.streamingContent"
+                class="flex items-center gap-2 text-muted-foreground"
+            >
                 <Loader class="size-3.5 animate-spin" />
                 <span class="text-xs">Pensando...</span>
             </div>
@@ -262,7 +367,11 @@ const streamingMessage = computed<ChatMessage>(() => ({
                 class="rounded-lg border border-border/60 bg-card p-3 text-xs text-muted-foreground"
             >
                 Configure um provedor de IA em
-                <RouterLink to="/settings" class="font-medium text-primary" @click="chat.open = false">
+                <RouterLink
+                    to="/settings"
+                    class="font-medium text-primary"
+                    @click="chat.open = false"
+                >
                     Configurações
                 </RouterLink>
                 para conversar.
@@ -271,7 +380,10 @@ const streamingMessage = computed<ChatMessage>(() => ({
     </div>
 
     <!-- Input -->
-    <form class="shrink-0 border-t border-border/50 p-4" @submit.prevent="submit">
+    <form
+        class="shrink-0 border-t border-border/50 p-4"
+        @submit.prevent="submit"
+    >
         <InputGroup :class="cn(chat.expanded && 'mx-auto max-w-3xl')">
             <InputGroupTextarea
                 v-model="chat.draft"

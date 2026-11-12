@@ -1,10 +1,21 @@
 <script setup lang="ts">
+import {
+    siFacebook,
+    siInstagram,
+    siPinterest,
+    siThreads,
+    siTiktok,
+    siX,
+    siYoutube,
+} from "simple-icons"
 import { computed } from "vue"
-import { siFacebook, siInstagram, siPinterest, siThreads, siTiktok, siX, siYoutube } from "simple-icons"
 
 import { platformInfo } from "@/lib/store"
 
-const props = withDefaults(defineProps<{ id: string; size?: number; mono?: boolean }>(), { size: 16, mono: false })
+const props = withDefaults(
+    defineProps<{ id: string; size?: number; mono?: boolean }>(),
+    { size: 16, mono: false },
+)
 
 // LinkedIn and Kwai are not in simple-icons; they get a lettermark.
 const PATHS: Record<string, string> = {
@@ -21,7 +32,11 @@ const LETTERS: Record<string, string> = { linkedin: "in", kwai: "K" }
 const info = computed(() => platformInfo(props.id))
 // Black-branded marks follow the text colour so they stay visible in dark mode.
 const INK_MARKS = new Set(["x", "threads"])
-const color = computed(() => (props.mono || INK_MARKS.has(props.id) ? "var(--foreground)" : info.value.color))
+const color = computed(() =>
+    props.mono || INK_MARKS.has(props.id)
+        ? "var(--foreground)"
+        : info.value.color,
+)
 </script>
 
 <template>
@@ -43,7 +58,12 @@ const color = computed(() => (props.mono || INK_MARKS.has(props.id) ? "var(--for
         role="img"
         :aria-label="info.name"
         :title="info.name"
-        :style="{ width: `${size}px`, height: `${size}px`, background: color, fontSize: `${size * 0.55}px` }"
+        :style="{
+            width: `${size}px`,
+            height: `${size}px`,
+            background: color,
+            fontSize: `${size * 0.55}px`,
+        }"
         >{{ LETTERS[id] ?? info.name.charAt(0) }}</span
     >
 </template>
