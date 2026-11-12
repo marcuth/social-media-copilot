@@ -14,6 +14,8 @@ Tudo fica no seu computador, num banco SQLite local. A IA funciona com o provedo
 - **Produção**: quadro kanban por etapa (Ideia, Roteiro, Gravação, Edição, Pronto, Publicado).
 - **IA**: gera roteiros em tempo real (com duração alvo e instruções), sugere metadados respeitando as regras de cada plataforma e propõe ideias novas que entram direto na produção.
 - **Skills**: manuais de método que a IA segue sozinha conforme o caso. Roteiros de vídeo longo do YouTube usam o método Jovens de Negócios; Shorts usam o método GPC (Gancho, Progresso, Clímax); legendas, carrosséis, hashtags e planos para o Instagram usam as skills de [instagram-skills](https://github.com/sergebulaev/instagram-skills) (MIT, © Sergey Bulaev). Dá para ler e desligar cada uma em Configurações.
+- **Pesquisa na web**: o Copilot pesquisa fatos atuais e lê links no chat, e pode pesquisar antes de escrever roteiros e ideias. Usa a busca do próprio provedor quando há (Anthropic, Google, OpenAI) e o [Firecrawl](https://www.firecrawl.dev) nos demais, inclusive modelos locais (conta própria ou instância self-hosted).
+- **Backup e restauração**: salva uma cópia de todos os dados num arquivo e restaura quando precisar; antes de restaurar, o app guarda uma cópia do estado atual. O backup inclui as chaves de API, então guarde-o com cuidado.
 - **Chat com o Copilot**: conversa livre que conhece seus perfis, a agenda e o post aberto. Abre na lateral e pode ser expandido em tela cheia; as conversas ficam salvas.
 
 ## Desenvolvimento
