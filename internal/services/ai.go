@@ -14,16 +14,13 @@ import (
 	"github.com/marcuth/social-media-copilot/internal/skills"
 )
 
-// EventAIDelta carries streamed text chunks of a generation to the frontend.
 const EventAIDelta = "ai:delta"
 
-// AIDelta is one streamed chunk, routed by the request id chosen by the caller.
 type AIDelta struct {
 	RequestID string `json:"requestId"`
 	Delta     string `json:"delta"`
 }
 
-// AIRequest is the context of a post the AI should work on.
 type AIRequest struct {
 	RequestID       string   `json:"requestId"`
 	ProfileID       int64    `json:"profileId"`
@@ -38,7 +35,6 @@ type AIRequest struct {
 	Instructions    string   `json:"instructions"`
 }
 
-// Metadata is the publishing metadata suggested for a post.
 type Metadata struct {
 	Title       string   `json:"title" jsonschema:"description=Título do conteúdo"`
 	Description string   `json:"description" jsonschema:"description=Descrição ou legenda completa"`
@@ -46,7 +42,6 @@ type Metadata struct {
 	Hashtags    []string `json:"hashtags" jsonschema:"description=Hashtags começando com #"`
 }
 
-// IdeasRequest asks for new content ideas for a profile.
 type IdeasRequest struct {
 	ProfileID    int64    `json:"profileId"`
 	ThemeID      *int64   `json:"themeId"`
@@ -56,7 +51,6 @@ type IdeasRequest struct {
 	Instructions string   `json:"instructions"`
 }
 
-// Idea is one content suggestion.
 type Idea struct {
 	Title   string `json:"title" jsonschema:"description=Título provisório"`
 	Hook    string `json:"hook" jsonschema:"description=Gancho dos primeiros segundos ou da primeira linha"`
@@ -68,13 +62,11 @@ type ideasEnvelope struct {
 	Ideas []Idea `json:"ideas"`
 }
 
-// AIService generates scripts, metadata and ideas with the default provider.
 type AIService struct {
 	Profiles  *ProfileService
 	Providers *ProviderService
 	Skills    *SkillService
-	// Emit sends an event to the frontend; set by main once the app exists.
-	Emit func(name string, data any)
+	Emit      func(name string, data any)
 }
 
 const systemBase = `Você é o copiloto de um criador de conteúdo para redes sociais. Você escreve roteiros e metadados prontos para usar, específicos para o perfil e as plataformas indicadas, sem frases genéricas nem clichês de marketing. Responda sempre no idioma do perfil.`
@@ -147,7 +139,6 @@ func (s *AIService) model() (goaiModel, error) {
 	return buildModel(p)
 }
 
-// system returns the system prompt with the skills that match the task.
 func (s *AIService) system(task skills.Task, platforms []string, format string) (string, error) {
 	var disabled map[string]bool
 	if s.Skills != nil {
@@ -244,7 +235,6 @@ func (s *AIService) GenerateScript(ctx context.Context, r AIRequest) (string, er
 	return strings.TrimSpace(full.String()), nil
 }
 
-// GenerateMetadata suggests title, description, tags and hashtags.
 func (s *AIService) GenerateMetadata(ctx context.Context, r AIRequest) (Metadata, error) {
 	var out Metadata
 	model, err := s.model()
@@ -280,7 +270,6 @@ Crie os metadados de publicação deste conteúdo, respeitando as orientações 
 	return out, nil
 }
 
-// GenerateIdeas suggests new content ideas for a profile.
 func (s *AIService) GenerateIdeas(ctx context.Context, r IdeasRequest) ([]Idea, error) {
 	model, err := s.model()
 	if err != nil {
@@ -353,7 +342,6 @@ func generateJSON[T any](ctx context.Context, model goaiModel, system, prompt st
 	return nil
 }
 
-// extractJSON returns the outermost JSON object in s.
 func extractJSON(s string) string {
 	start := strings.Index(s, "{")
 	end := strings.LastIndex(s, "}")

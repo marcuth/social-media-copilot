@@ -27,7 +27,7 @@
     --confirm: #009e60;
     --confirm-foreground: #ffffff;
     --border: #d1d5db;
-    /* Field borders: visible against white cards (Indie Copilot uses #f0f3f6). */
+    /* Darker than Indie Copilot's so field borders show on cards. */
     --input: #aab1bc;
     --ring: #e11d62;
 
@@ -69,7 +69,6 @@
     --confirm: #009166;
     --confirm-foreground: #e6fff3;
     --border: #444444;
-    /* Field borders: visible against #2a2a2a cards (Indie Copilot uses #2a2a2a). */
     --input: #5e5e5e;
     --ring: #e11d62;
 

@@ -29,7 +29,6 @@ const (
 
 type goaiModel = provider.LanguageModel
 
-// ProviderService manages the user's AI providers.
 type ProviderService struct {
 	DB *sql.DB
 }
@@ -42,7 +41,6 @@ func scanProvider(row scanner) (models.AIProvider, error) {
 	return p, err
 }
 
-// ListProviders returns every configured provider, default first.
 func (s *ProviderService) ListProviders() ([]models.AIProvider, error) {
 	rows, err := s.DB.Query(`SELECT ` + providerColumns + ` FROM ai_providers ORDER BY is_default DESC, name COLLATE NOCASE`)
 	if err != nil {
@@ -140,7 +138,6 @@ func (s *ProviderService) DeleteProvider(id int64) error {
 	return err
 }
 
-// SetDefaultProvider makes a provider the one used by the AI features.
 func (s *ProviderService) SetDefaultProvider(id int64) error {
 	tx, err := s.DB.Begin()
 	if err != nil {
@@ -153,7 +150,6 @@ func (s *ProviderService) SetDefaultProvider(id int64) error {
 	return tx.Commit()
 }
 
-// TestProvider sends a tiny prompt with the given (possibly unsaved) settings.
 func (s *ProviderService) TestProvider(ctx context.Context, p models.AIProvider) (string, error) {
 	if err := validateProvider(&p); err != nil {
 		return "", err
@@ -183,7 +179,6 @@ func (s *ProviderService) defaultProvider() (models.AIProvider, error) {
 	return p, err
 }
 
-// buildModel turns a stored provider into a goai language model.
 func buildModel(p models.AIProvider) (provider.LanguageModel, error) {
 	switch p.Kind {
 	case KindOpenAICompatible:

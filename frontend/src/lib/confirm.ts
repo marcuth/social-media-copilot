@@ -19,7 +19,6 @@ export const confirmState = reactive<ConfirmState>({
     resolve: null,
 })
 
-/** Opens the app-wide confirmation dialog and resolves with the choice. */
 export function confirmDialog(options: ConfirmOptions): Promise<boolean> {
     confirmState.resolve?.(false)
     Object.assign(confirmState, {

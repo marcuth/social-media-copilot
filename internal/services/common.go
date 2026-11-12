@@ -1,5 +1,3 @@
-// Package services contains the Wails services bound to the frontend. Every
-// exported method of a service becomes a typed TypeScript function.
 package services
 
 import (
@@ -10,12 +8,10 @@ import (
 	"time"
 )
 
-// ScheduleLayout is the format of scheduled_at/published_at values.
 const ScheduleLayout = "2006-01-02T15:04"
 
 const dayLayout = "2006-01-02"
 
-// ErrNotFound is returned when a record does not exist.
 var ErrNotFound = errors.New("registro não encontrado")
 
 func nowStamp() string { return time.Now().Format(time.RFC3339) }
@@ -33,7 +29,6 @@ func parseSchedule(s string) (time.Time, error) {
 	return time.ParseInLocation(ScheduleLayout, s, time.Local)
 }
 
-// normalizeSchedule validates and canonicalises an optional schedule string.
 func normalizeSchedule(s *string) (*string, error) {
 	if s == nil || strings.TrimSpace(*s) == "" {
 		return nil, nil
@@ -58,7 +53,6 @@ func decodeList(s string) []string {
 	return out
 }
 
-// cleanList trims, drops empties and removes duplicates (case-insensitive).
 func cleanList(list []string) []string {
 	out := []string{}
 	seen := map[string]bool{}

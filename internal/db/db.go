@@ -1,4 +1,3 @@
-// Package db opens the SQLite database and keeps its schema up to date.
 package db
 
 import (
@@ -133,7 +132,6 @@ var migrations = []string{
 	`,
 }
 
-// DefaultPath returns the database location inside the user's config dir.
 func DefaultPath() (string, error) {
 	if p := os.Getenv("SMC_DB_PATH"); p != "" {
 		return p, nil
@@ -145,7 +143,6 @@ func DefaultPath() (string, error) {
 	return filepath.Join(dir, "social-media-copilot", "social-media-copilot.db"), nil
 }
 
-// Open opens (creating if needed) the database at path and runs pending migrations.
 func Open(path string) (*sql.DB, error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return nil, fmt.Errorf("criar pasta do banco: %w", err)

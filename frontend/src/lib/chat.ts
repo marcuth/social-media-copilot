@@ -12,7 +12,6 @@ import {
 } from "./api"
 import { store } from "./store"
 
-/** App-wide state of the copilot chat panel. */
 export const chat = reactive({
     open: false,
     expanded: false,

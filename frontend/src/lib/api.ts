@@ -1,5 +1,4 @@
-// Single entry point to the generated Wails bindings, plus small helpers that
-// normalise Go nil slices (sent as null) into empty arrays.
+// The only module importing the generated bindings; Go nil slices arrive as null.
 import type * as Catalog from "../../bindings/github.com/marcuth/social-media-copilot/internal/catalog/models"
 import type * as Models from "../../bindings/github.com/marcuth/social-media-copilot/internal/models/models"
 import type * as Svc from "../../bindings/github.com/marcuth/social-media-copilot/internal/services/models"
@@ -36,7 +35,6 @@ export type ChatSession = Svc.ChatSession
 export type ChatMessage = Svc.ChatMessage
 export type SkillInfo = Svc.SkillInfo
 
-/** Post with arrays guaranteed non-null. */
 export interface PostN extends Post {
     tags: string[]
     hashtags: string[]
@@ -72,7 +70,6 @@ export function emptyFilter(patch: Partial<PostFilter> = {}): PostFilter {
     }
 }
 
-/** Human message from a rejected binding call. */
 export function errorMessage(e: unknown): string {
     if (e instanceof Error) return e.message
     if (typeof e === "object" && e && "message" in e)
@@ -80,7 +77,6 @@ export function errorMessage(e: unknown): string {
     return String(e)
 }
 
-/** True when a cancellable call was cancelled by us. */
 export function isCancel(e: unknown): boolean {
     const name =
         typeof e === "object" && e && "name" in e

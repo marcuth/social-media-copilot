@@ -17,7 +17,6 @@ import (
 	"github.com/marcuth/social-media-copilot/internal/skills"
 )
 
-// ChatSession is a saved conversation with the copilot.
 type ChatSession struct {
 	ID        int64  `json:"id"`
 	Title     string `json:"title"`
@@ -25,7 +24,6 @@ type ChatSession struct {
 	UpdatedAt string `json:"updatedAt"`
 }
 
-// ChatMessage is one turn of a conversation.
 type ChatMessage struct {
 	ID        int64  `json:"id"`
 	SessionID int64  `json:"sessionId"`
@@ -46,13 +44,11 @@ type ChatRequest struct {
 	Post *models.Post `json:"post"`
 }
 
-// ChatReply is the result of a sent message.
 type ChatReply struct {
 	Session ChatSession `json:"session"`
 	Message ChatMessage `json:"message"`
 }
 
-// ChatService runs the free chat with the copilot.
 type ChatService struct {
 	DB    *sql.DB
 	AI    *AIService
@@ -69,7 +65,6 @@ const chatSystem = `Você é o Copiloto do app Social Media Copilot e ajuda um c
 const chatSkillRules = `# Skills
 Você tem a ferramenta load_skill, que carrega manuais de método. Antes de escrever algo coberto por uma skill (por exemplo roteiro de vídeo longo ou de Shorts para o YouTube, legenda, carrossel ou hashtags de Instagram), carregue a skill e siga o método dela. Ao usar uma skill dentro deste app, ignore passos de publicar, agendar, enviar mídia, rodar scripts ou bibliotecas (lib.publish, Publora, Apify, MCP) e de carregar perfis de voz. Não diga ao usuário que carregou uma skill, apenas aplique.`
 
-// ListSessions returns the conversations, most recent first.
 func (s *ChatService) ListSessions() ([]ChatSession, error) {
 	rows, err := s.DB.Query(`SELECT id, title, created_at, updated_at FROM chat_sessions ORDER BY updated_at DESC LIMIT 100`)
 	if err != nil {
@@ -87,7 +82,6 @@ func (s *ChatService) ListSessions() ([]ChatSession, error) {
 	return out, rows.Err()
 }
 
-// GetMessages returns the messages of a conversation in order.
 func (s *ChatService) GetMessages(sessionID int64) ([]ChatMessage, error) {
 	rows, err := s.DB.Query(`SELECT id, session_id, role, content, model, created_at FROM chat_messages
 		WHERE session_id = ? ORDER BY id`, sessionID)
@@ -106,7 +100,6 @@ func (s *ChatService) GetMessages(sessionID int64) ([]ChatMessage, error) {
 	return out, rows.Err()
 }
 
-// DeleteSession removes a conversation and its messages.
 func (s *ChatService) DeleteSession(id int64) error {
 	_, err := s.DB.Exec(`DELETE FROM chat_sessions WHERE id = ?`, id)
 	return err
@@ -200,7 +193,6 @@ func (s *ChatService) SendMessage(ctx context.Context, r ChatRequest) (ChatReply
 	}
 	if err != nil {
 		if text != "" {
-			// Keep what was written before the error.
 			s.addMessage(session.ID, "assistant", strings.TrimSpace(text), providerRow.Name+" · "+providerRow.Model)
 		}
 		return reply, friendlyAIError(err)
@@ -242,8 +234,6 @@ func (s *ChatService) stream(ctx context.Context, model goaiModel, requestID, sy
 	return full.String(), stream.Err()
 }
 
-// skillTools returns the skill catalog for the system prompt and the
-// load_skill tool, limited to enabled skills.
 func (s *ChatService) skillTools() (string, []goai.Tool) {
 	disabled := map[string]bool{}
 	if s.AI.Skills != nil {
@@ -278,7 +268,6 @@ func (s *ChatService) skillTools() (string, []goai.Tool) {
 	return b.String(), []goai.Tool{tool}
 }
 
-// contextText describes today, the profiles, the open post and the schedule.
 func (s *ChatService) contextText(r ChatRequest) string {
 	var b strings.Builder
 	now := time.Now()

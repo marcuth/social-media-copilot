@@ -11,7 +11,6 @@ import (
 	"github.com/marcuth/social-media-copilot/internal/models"
 )
 
-// PostService manages posts, their platforms and their schedule.
 type PostService struct {
 	DB *sql.DB
 }
@@ -154,7 +153,6 @@ func (s *PostService) getPost(q queryer, id int64) (models.Post, error) {
 	return list[0], nil
 }
 
-// GetPost returns one post with its platforms.
 func (s *PostService) GetPost(id int64) (models.Post, error) {
 	return s.getPost(s.DB, id)
 }
@@ -266,7 +264,6 @@ func (s *PostService) SavePost(p models.Post) (models.Post, error) {
 		}
 	}
 
-	// Remove platforms that were unselected, add new ones, keep the rest.
 	rows, err := tx.Query(`SELECT platform FROM post_platforms WHERE post_id = ?`, p.ID)
 	if err != nil {
 		return p, err
@@ -301,13 +298,11 @@ func (s *PostService) SavePost(p models.Post) (models.Post, error) {
 	return s.GetPost(p.ID)
 }
 
-// DeletePost removes a post.
 func (s *PostService) DeletePost(id int64) error {
 	_, err := s.DB.Exec(`DELETE FROM posts WHERE id = ?`, id)
 	return err
 }
 
-// DuplicatePost copies a post as an unscheduled draft with the same platforms.
 func (s *PostService) DuplicatePost(id int64) (models.Post, error) {
 	p, err := s.GetPost(id)
 	if err != nil {
@@ -323,7 +318,6 @@ func (s *PostService) DuplicatePost(id int64) (models.Post, error) {
 	return s.SavePost(p)
 }
 
-// UpdateStatus moves a post to another pipeline stage.
 func (s *PostService) UpdateStatus(id int64, status string) (models.Post, error) {
 	if !catalog.IsStatus(status) {
 		return models.Post{}, fmt.Errorf("status desconhecido: %s", status)
@@ -409,7 +403,6 @@ func (s *PostService) Reschedule(id int64, scheduledAt *string) (models.Post, er
 	return s.GetPost(id)
 }
 
-// moveTo updates a post's date and, when record is true, logs a postponement.
 func (s *PostService) moveTo(tx *sql.Tx, p models.Post, next *string, reason string, record bool) error {
 	inc := 0
 	if record {
@@ -529,8 +522,6 @@ func (s *PostService) Postpone(req models.PostponeRequest) (models.PostponeResul
 	return result, err
 }
 
-// nextFreeDay finds the first day after from with no other post of the
-// profile, keeping the time of day.
 func (s *PostService) nextFreeDay(tx *sql.Tx, profileID, postID int64, from time.Time) (time.Time, error) {
 	rows, err := tx.Query(`SELECT DISTINCT substr(scheduled_at, 1, 10) FROM posts
 		WHERE profile_id = ? AND id != ? AND scheduled_at > ?`, profileID, postID, from.Format(dayLayout))
@@ -556,7 +547,6 @@ func (s *PostService) nextFreeDay(tx *sql.Tx, profileID, postID int64, from time
 	return from, errors.New("nenhum dia livre encontrado")
 }
 
-// ListPostponements returns the date history of a post, newest first.
 func (s *PostService) ListPostponements(postID int64) ([]models.Postponement, error) {
 	rows, err := s.DB.Query(`SELECT id, post_id, from_at, to_at, reason, created_at FROM postponements
 		WHERE post_id = ? ORDER BY id DESC`, postID)
@@ -577,7 +567,6 @@ func (s *PostService) ListPostponements(postID int64) ([]models.Postponement, er
 	return out, rows.Err()
 }
 
-// GetStats summarises the pipeline, for one profile or all (nil).
 func (s *PostService) GetStats(profileID *int64) (models.Stats, error) {
 	st := models.Stats{ByStatus: map[string]int{}}
 	for _, o := range catalog.Statuses {

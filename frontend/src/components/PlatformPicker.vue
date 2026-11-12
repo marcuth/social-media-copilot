@@ -5,7 +5,6 @@ import PlatformIcon from "@/components/PlatformIcon.vue"
 import { platformInfo } from "@/lib/store"
 import { cn } from "@/lib/utils"
 
-// Multi-select limited to the platforms a profile has.
 const props = defineProps<{ available: string[] }>()
 const model = defineModel<string[]>({ required: true })
 

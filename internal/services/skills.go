@@ -12,19 +12,16 @@ import (
 
 const disabledSkillsKey = "skills.disabled"
 
-// SkillInfo describes a bundled skill for the settings screen.
 type SkillInfo struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Source      string `json:"source"`
 	License     string `json:"license"`
-	// AppliesTo explains in plain words when the skill is used automatically.
-	AppliesTo string `json:"appliesTo"`
-	Enabled   bool   `json:"enabled"`
+	AppliesTo   string `json:"appliesTo"`
+	Enabled     bool   `json:"enabled"`
 }
 
-// SkillService lists the bundled skills and lets the user turn them off.
 type SkillService struct {
 	DB *sql.DB
 }
@@ -47,7 +44,6 @@ func (s *SkillService) disabled() (map[string]bool, error) {
 	return out, nil
 }
 
-// ListSkills returns every bundled skill with its on/off state.
 func (s *SkillService) ListSkills() ([]SkillInfo, error) {
 	disabled, err := s.disabled()
 	if err != nil {
@@ -68,7 +64,6 @@ func (s *SkillService) ListSkills() ([]SkillInfo, error) {
 	return out, nil
 }
 
-// SetSkillEnabled turns a skill on or off for the AI features.
 func (s *SkillService) SetSkillEnabled(id string, enabled bool) error {
 	if _, ok := skills.ByID(id); !ok {
 		return errors.New("skill desconhecida")
@@ -92,7 +87,6 @@ func (s *SkillService) SetSkillEnabled(id string, enabled bool) error {
 	return err
 }
 
-// GetSkillText returns the full text of a skill, to read it in the app.
 func (s *SkillService) GetSkillText(id string) (string, error) {
 	return skills.Text(id)
 }

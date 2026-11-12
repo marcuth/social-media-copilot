@@ -10,7 +10,6 @@ import (
 	"github.com/marcuth/social-media-copilot/internal/models"
 )
 
-// ProfileService manages profiles, their platforms and their themes.
 type ProfileService struct {
 	DB *sql.DB
 }
@@ -48,7 +47,6 @@ func (s *ProfileService) loadPlatforms(profiles []models.Profile) error {
 			profiles[i].Platforms = append(profiles[i].Platforms, pp)
 		}
 	}
-	// Keep the catalog order so every screen lists platforms the same way.
 	for i := range profiles {
 		sortPlatforms(profiles[i].Platforms)
 	}
@@ -67,7 +65,6 @@ func sortPlatforms(list []models.ProfilePlatform) {
 	}
 }
 
-// ListProfiles returns every profile with its platforms, alphabetically.
 func (s *ProfileService) ListProfiles() ([]models.Profile, error) {
 	rows, err := s.DB.Query(`SELECT ` + profileColumns + ` FROM profiles ORDER BY name COLLATE NOCASE`)
 	if err != nil {
@@ -88,7 +85,6 @@ func (s *ProfileService) ListProfiles() ([]models.Profile, error) {
 	return out, s.loadPlatforms(out)
 }
 
-// GetProfile returns one profile.
 func (s *ProfileService) GetProfile(id int64) (models.Profile, error) {
 	p, err := scanProfile(s.DB.QueryRow(`SELECT `+profileColumns+` FROM profiles WHERE id = ?`, id))
 	if errors.Is(err, sql.ErrNoRows) {
@@ -104,7 +100,6 @@ func (s *ProfileService) GetProfile(id int64) (models.Profile, error) {
 	return list[0], nil
 }
 
-// SaveProfile creates (ID 0) or updates a profile and replaces its platforms.
 func (s *ProfileService) SaveProfile(p models.Profile) (models.Profile, error) {
 	p.Name = strings.TrimSpace(p.Name)
 	if p.Name == "" {
@@ -165,14 +160,11 @@ func (s *ProfileService) SaveProfile(p models.Profile) (models.Profile, error) {
 	return s.GetProfile(p.ID)
 }
 
-// DeleteProfile removes a profile together with its themes and posts.
 func (s *ProfileService) DeleteProfile(id int64) error {
 	_, err := s.DB.Exec(`DELETE FROM profiles WHERE id = ?`, id)
 	return err
 }
 
-// ListThemes returns the themes of a profile, or of every profile when
-// profileID is 0.
 func (s *ProfileService) ListThemes(profileID int64) ([]models.Theme, error) {
 	q := `SELECT id, profile_id, name, description, color, created_at FROM themes`
 	args := []any{}
@@ -197,7 +189,6 @@ func (s *ProfileService) ListThemes(profileID int64) ([]models.Theme, error) {
 	return out, rows.Err()
 }
 
-// SaveTheme creates (ID 0) or updates a theme.
 func (s *ProfileService) SaveTheme(t models.Theme) (models.Theme, error) {
 	t.Name = strings.TrimSpace(t.Name)
 	if t.Name == "" {

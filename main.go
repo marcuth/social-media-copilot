@@ -14,7 +14,6 @@ import (
 var assets embed.FS
 
 func init() {
-	// Registering the event gives the frontend a typed listener for AI streaming.
 	application.RegisterEvent[services.AIDelta](services.EventAIDelta)
 }
 

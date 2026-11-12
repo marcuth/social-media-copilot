@@ -294,7 +294,6 @@ async function setPlatformStatus(
     }
 }
 
-// The chat sees the post being edited, unsaved changes included.
 watchEffect(() => {
     chat.post = post.value
 })
@@ -302,7 +301,6 @@ onBeforeUnmount(() => {
     chat.post = null
 })
 
-// Skills each generation will follow, shown before generating.
 const skillsFor = reactive({
     script: [] as SkillInfo[],
     metadata: [] as SkillInfo[],
@@ -340,7 +338,6 @@ watch(
     { immediate: true },
 )
 
-// ── AI ────────────────────────────────────────────────────────────────────
 const ai = reactive({
     duration: 60,
     scriptInstructions: "",
@@ -441,7 +438,6 @@ function applyMeta(field: keyof Metadata | "all"): void {
         post.value.hashtags = [...(m.hashtags ?? [])]
 }
 
-// ── Keyboard & leave guard ───────────────────────────────────────────────
 function onKey(e: KeyboardEvent): void {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
         e.preventDefault()

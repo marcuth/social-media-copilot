@@ -115,7 +115,6 @@ async function removeSession(id: number, title: string): Promise<void> {
     if (ok) await deleteSession(id)
 }
 
-// Keep the newest message in view while it streams.
 async function scrollToEnd(): Promise<void> {
     await nextTick()
     if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight
@@ -134,7 +133,6 @@ const streamingMessage = computed<ChatMessage>(() => ({
 </script>
 
 <template>
-    <!-- Header -->
     <div
         class="flex shrink-0 flex-col gap-1.5 border-b border-border/50 p-4 pr-12"
     >
@@ -234,7 +232,6 @@ const streamingMessage = computed<ChatMessage>(() => ({
         </div>
     </div>
 
-    <!-- Messages -->
     <div ref="scroller" class="min-h-0 flex-1 overflow-y-auto">
         <div
             :class="
@@ -379,7 +376,6 @@ const streamingMessage = computed<ChatMessage>(() => ({
         </div>
     </div>
 
-    <!-- Input -->
     <form
         class="shrink-0 border-t border-border/50 p-4"
         @submit.prevent="submit"

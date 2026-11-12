@@ -108,7 +108,6 @@ function createOn(d: Date): void {
     router.push({ name: "post", params: { id: "new" }, query })
 }
 
-// Drag and drop: move a post to another day keeping its time.
 function onDragStart(e: DragEvent, p: PostN): void {
     e.dataTransfer?.setData("text/post-id", String(p.id))
     if (e.dataTransfer) e.dataTransfer.effectAllowed = "move"

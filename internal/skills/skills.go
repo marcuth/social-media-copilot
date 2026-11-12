@@ -17,7 +17,6 @@ import (
 //go:embed content
 var content embed.FS
 
-// Task is the kind of work the AI is doing.
 type Task string
 
 const (
@@ -29,7 +28,6 @@ const (
 	TaskChat Task = "chat"
 )
 
-// Skill is one method guide and where it applies.
 type Skill struct {
 	ID          string
 	Name        string
@@ -185,10 +183,8 @@ var registry = []Skill{
 	},
 }
 
-// All returns every registered skill.
 func All() []Skill { return slices.Clone(registry) }
 
-// ByID returns a skill and whether it exists.
 func ByID(id string) (Skill, bool) {
 	for _, s := range registry {
 		if s.ID == id {
@@ -227,7 +223,6 @@ As skills abaixo são manuais de método escritos para este tipo de tarefa. Siga
 - Se a skill pedir um formato de entrega diferente do pedido na tarefa, vale o formato da tarefa.
 - Escreva no idioma do perfil, mesmo que a skill esteja em outro idioma.`
 
-// Render returns the text of the skills, each referenced file included once.
 func Render(list []Skill) (string, error) {
 	if len(list) == 0 {
 		return "", nil

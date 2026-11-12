@@ -1,8 +1,5 @@
-// Package catalog defines the fixed vocabularies of the app: platforms,
-// content formats and pipeline statuses.
 package catalog
 
-// Platform describes a social network the app knows how to plan for.
 type Platform struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
@@ -11,7 +8,6 @@ type Platform struct {
 	Guidance string `json:"guidance"`
 }
 
-// Option is a generic id/label pair.
 type Option struct {
 	ID    string `json:"id"`
 	Label string `json:"label"`
@@ -58,7 +54,6 @@ func has(list []Option, id string) bool {
 	return false
 }
 
-// PlatformByID returns the platform and whether it exists.
 func PlatformByID(id string) (Platform, bool) {
 	for _, p := range Platforms {
 		if p.ID == id {
@@ -71,7 +66,6 @@ func PlatformByID(id string) (Platform, bool) {
 func IsFormat(id string) bool { return has(Formats, id) }
 func IsStatus(id string) bool { return has(Statuses, id) }
 
-// Label returns the label of id inside list, or id itself.
 func Label(list []Option, id string) string {
 	for _, o := range list {
 		if o.ID == id {

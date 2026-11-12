@@ -112,7 +112,6 @@ async function remove(): Promise<void> {
     }
 }
 
-// ── Themes ───────────────────────────────────────────────────────────────
 const themes = computed(() => themesOf(draft.value.id))
 const newTheme = reactive({
     name: "",
