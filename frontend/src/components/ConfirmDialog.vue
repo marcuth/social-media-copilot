@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { TriangleAlert } from "@lucide/vue"
+import { nextTick } from "vue"
 
 import {
     AlertDialog,
@@ -14,8 +15,14 @@ import {
 import { confirmState, settleConfirm } from "@/lib/confirm"
 import { buttonVariants } from "@/components/ui/button"
 
+// Dismissing (Esc, overlay) cancels. The action button also closes the dialog,
+// and that close arrives before its own click handler, so wait a tick to let
+// settleConfirm(true) run first instead of resolving the promise with false.
 function onOpenChange(open: boolean): void {
-    if (!open && confirmState.open) settleConfirm(false)
+    if (open) return
+    void nextTick(() => {
+        if (confirmState.open) settleConfirm(false)
+    })
 }
 </script>
 
