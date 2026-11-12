@@ -186,3 +186,28 @@ func migrate(conn *sql.DB) error {
 	}
 	return nil
 }
+
+// LatestVersion is the schema version this build migrates to.
+func LatestVersion() int { return len(migrations) }
+
+// ReadVersion reads the schema version of a database file without migrating
+// it, failing if the file isn't an app database.
+func ReadVersion(path string) (int, error) {
+	conn, err := sql.Open("sqlite", "file:"+filepath.ToSlash(path)+"?mode=ro")
+	if err != nil {
+		return 0, err
+	}
+	defer conn.Close()
+	var version, tables int
+	if err := conn.QueryRow(`PRAGMA user_version`).Scan(&version); err != nil {
+		return 0, err
+	}
+	err = conn.QueryRow(`SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name IN ('profiles', 'posts')`).Scan(&tables)
+	if err != nil {
+		return 0, err
+	}
+	if tables != 2 {
+		return 0, fmt.Errorf("o arquivo não é um banco do Social Media Copilot")
+	}
+	return version, nil
+}

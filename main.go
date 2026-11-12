@@ -36,6 +36,7 @@ func main() {
 	web := &services.WebService{DB: conn, Providers: providers}
 	ai := &services.AIService{Profiles: profiles, Providers: providers, Skills: skillSvc, Web: web}
 	chat := &services.ChatService{DB: conn, AI: ai, Posts: posts}
+	backup := &services.BackupService{DB: conn, Path: path}
 
 	app := application.New(application.Options{
 		Name:        "Social Media Copilot",
@@ -49,6 +50,7 @@ func main() {
 			application.NewService(skillSvc),
 			application.NewService(chat),
 			application.NewService(web),
+			application.NewService(backup),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -57,6 +59,7 @@ func main() {
 	emit := func(name string, data any) { app.Event.Emit(name, data) }
 	ai.Emit = emit
 	web.Emit = emit
+	backup.Dialogs = dialogs{app}
 
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:            "Social Media Copilot",
@@ -72,4 +75,26 @@ func main() {
 	if err := app.Run(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+type dialogs struct{ app *application.App }
+
+func (d dialogs) SaveFile(title, defaultName string) (string, error) {
+	return d.app.Dialog.SaveFile().
+		SetMessage(title).
+		SetFilename(defaultName).
+		AddFilter("Banco SQLite", "*.db").
+		PromptForSingleSelection()
+}
+
+func (d dialogs) OpenFile(title string) (string, error) {
+	return d.app.Dialog.OpenFile().
+		SetTitle(title).
+		AddFilter("Banco SQLite", "*.db;*.sqlite").
+		CanChooseFiles(true).
+		PromptForSingleSelection()
+}
+
+func (d dialogs) Reveal(path string) error {
+	return d.app.Browser.OpenFile(path)
 }
