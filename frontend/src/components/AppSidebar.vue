@@ -71,7 +71,7 @@ const nav = [
                     <span class="font-heading text-sm leading-tight font-bold"
                         >Social Media Copilot</span
                     >
-                    <span class="text-xs text-muted-foreground">v0.1.0</span>
+                    <span class="text-xs text-muted-foreground">v0.1.2</span>
                 </div>
             </div>
         </SidebarHeader>

@@ -393,7 +393,7 @@ const THEMES: { value: Theme; label: string; icon: typeof Sun }[] = [
                             <div
                                 class="space-y-1 rounded-lg bg-muted p-4 font-mono text-xs"
                             >
-                                <p>Social Media Copilot v0.1.0</p>
+                                <p>Social Media Copilot v0.1.2</p>
                                 <p class="text-muted-foreground">
                                     Wails v3 + Go + Vue 3 + TypeScript + SQLite
                                 </p>

@@ -17,7 +17,7 @@
         PackageDisplayName="Social Media Copilot"
         PublisherName="CN=Marcuth"
         PublisherDisplayName="Marcuth"
-        Version="0.1.0.0"
+        Version="0.1.2.0"
         PackageDescription="Agendamento e criação de conteúdo para redes sociais com IA">
         <Capabilities>
             <Capability Name="runFullTrust" />
