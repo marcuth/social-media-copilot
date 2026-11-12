@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
+import { CalendarClock } from "@lucide/vue"
 
-import AppModal from "./AppModal.vue"
-import { PostService, normPost, type Post, type PostN } from "../lib/api"
-import { addDays, formatDay, formatTime, parseSchedule, toSchedule } from "../lib/dates"
-import { toast, toastError } from "../lib/toast"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { PostService, normPost, type Post, type PostN } from "@/lib/api"
+import { addDays, formatDay, formatTime, parseSchedule, toSchedule } from "@/lib/dates"
+import { toast, toastError } from "@/lib/toast"
+import { cn } from "@/lib/utils"
 
 const props = defineProps<{ post: Post }>()
 const emit = defineEmits<{ close: []; done: [PostN] }>()
@@ -37,11 +43,10 @@ const preview = computed(() => {
 async function confirm(): Promise<void> {
     busy.value = true
     try {
-        const days = Number(choice.value) || 0
         const res = await PostService.Postpone({
             postId: props.post.id,
             mode: choice.value === "date" ? "date" : choice.value === "next_free" ? "next_free" : "days",
-            days,
+            days: Number(choice.value) || 0,
             date: date.value,
             reason: reason.value,
             cascade: cascade.value,
@@ -58,117 +63,70 @@ async function confirm(): Promise<void> {
 </script>
 
 <template>
-    <AppModal title="Adiar post" @close="emit('close')">
-        <p class="what">
-            <strong>{{ post.title }}</strong>
-            <span class="muted">
-                {{ current ? `está marcado para ${formatDay(current)}, ${formatTime(current)}` : "ainda não tem data" }}
-            </span>
-        </p>
+    <Dialog :open="true" @update:open="(open) => !open && emit('close')">
+        <DialogContent class="sm:max-w-[480px]">
+            <DialogHeader>
+                <DialogTitle class="flex items-center gap-2">
+                    <CalendarClock class="size-5 text-primary" /> Adiar post
+                </DialogTitle>
+                <DialogDescription>
+                    <strong class="text-foreground">{{ post.title }}</strong>
+                    {{ current ? `está marcado para ${formatDay(current)}, ${formatTime(current)}.` : "ainda não tem data." }}
+                </DialogDescription>
+            </DialogHeader>
 
-        <div class="choices" role="radiogroup" aria-label="Para quando">
-            <label
-                v-for="o in options"
-                :key="o.id"
-                class="choice"
-                :class="{ on: choice === o.id, disabled: !current && o.id !== 'date' }"
-            >
-                <input v-model="choice" type="radio" :value="o.id" :disabled="!current && o.id !== 'date'" />
-                {{ o.label }}
-            </label>
-        </div>
+            <div class="space-y-4">
+                <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Para quando">
+                    <button
+                        v-for="o in options"
+                        :key="o.id"
+                        type="button"
+                        role="radio"
+                        :aria-checked="choice === o.id"
+                        :disabled="!current && o.id !== 'date'"
+                        :class="
+                            cn(
+                                'h-9 cursor-pointer rounded-md border-2 px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40',
+                                choice === o.id
+                                    ? 'border-primary bg-primary/10'
+                                    : 'border-border/50 bg-card hover:border-primary/30',
+                            )
+                        "
+                        @click="choice = o.id"
+                    >
+                        {{ o.label }}
+                    </button>
+                </div>
 
-        <label v-if="choice === 'date'" class="field">
-            <span>Nova data</span>
-            <input v-model="date" type="datetime-local" class="input" />
-        </label>
+                <div v-if="choice === 'date'" class="space-y-2">
+                    <Label for="postpone-date">Nova data</Label>
+                    <Input id="postpone-date" v-model="date" type="datetime-local" />
+                </div>
 
-        <p class="preview">
-            Vai para <strong>{{ preview }}</strong>
-        </p>
+                <div class="rounded-lg bg-muted p-4 text-sm">
+                    Vai para <strong>{{ preview }}</strong>
+                </div>
 
-        <label class="field">
-            <span>Motivo (opcional)</span>
-            <input v-model="reason" class="input" placeholder="Ex.: falta gravar a cena externa" />
-        </label>
+                <div class="space-y-2">
+                    <Label for="postpone-reason">Motivo (opcional)</Label>
+                    <Input id="postpone-reason" v-model="reason" placeholder="Ex.: falta gravar a cena externa" />
+                </div>
 
-        <label v-if="current" class="check cascade">
-            <input v-model="cascade" type="checkbox" />
-            <span>
-                Empurrar a fila deste perfil
-                <small class="muted">
-                    Os próximos posts não publicados andam a mesma distância, mantendo o espaçamento entre eles.
-                </small>
-            </span>
-        </label>
+                <Label v-if="current" class="flex items-start gap-3 font-normal">
+                    <Checkbox v-model="cascade" class="mt-0.5" />
+                    <span>
+                        <span class="block font-medium">Empurrar a fila deste perfil</span>
+                        <span class="text-xs text-muted-foreground">
+                            Os próximos posts não publicados andam a mesma distância, mantendo o espaçamento.
+                        </span>
+                    </span>
+                </Label>
+            </div>
 
-        <template #footer>
-            <button class="btn ghost" @click="emit('close')">Cancelar</button>
-            <button class="btn primary" :disabled="busy" @click="confirm">Adiar post</button>
-        </template>
-    </AppModal>
+            <DialogFooter>
+                <Button variant="outline" @click="emit('close')">Cancelar</Button>
+                <Button :disabled="busy" @click="confirm">Adiar post</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>
-
-<style scoped>
-.what {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 16px;
-}
-
-.choices {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 14px;
-}
-
-.choice {
-    display: inline-flex;
-    align-items: center;
-    height: 32px;
-    padding: 0 12px;
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 13px;
-    cursor: pointer;
-}
-
-.choice input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.choice:focus-within {
-    outline: 2px solid var(--cobalt);
-    outline-offset: 2px;
-}
-
-.choice.on {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--paper);
-}
-
-.choice.disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.preview {
-    margin: 4px 0 16px;
-    padding: 10px 12px;
-    border-radius: var(--r-sm);
-    background: var(--surface-2);
-}
-
-.cascade {
-    margin-top: 14px;
-}
-
-.cascade small {
-    display: block;
-}
-</style>

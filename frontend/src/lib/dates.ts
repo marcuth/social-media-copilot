@@ -46,7 +46,10 @@ const fmtMonth = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeri
 export const formatTime = (d: Date): string => fmtTime.format(d)
 export const formatDay = (d: Date): string => fmtDay.format(d).replace(/\./g, "")
 export const formatLongDay = (d: Date): string => fmtLong.format(d)
-export const formatMonth = (d: Date): string => fmtMonth.format(d)
+export function formatMonth(d: Date): string {
+    const s = fmtMonth.format(d)
+    return s.charAt(0).toUpperCase() + s.slice(1)
+}
 
 export function formatSchedule(s: string | null | undefined): string {
     const d = parseSchedule(s)

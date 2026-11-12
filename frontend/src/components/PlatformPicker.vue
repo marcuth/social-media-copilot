@@ -1,71 +1,42 @@
 <script setup lang="ts">
-import PlatformIcon from "./PlatformIcon.vue"
-import { platformInfo } from "../lib/store"
+import { Check } from "@lucide/vue"
+
+import PlatformIcon from "@/components/PlatformIcon.vue"
+import { platformInfo } from "@/lib/store"
+import { cn } from "@/lib/utils"
 
 // Multi-select limited to the platforms a profile has.
-const props = defineProps<{ available: string[]; modelValue: string[] }>()
-const emit = defineEmits<{ "update:modelValue": [string[]] }>()
+const props = defineProps<{ available: string[] }>()
+const model = defineModel<string[]>({ required: true })
 
 function toggle(id: string): void {
-    const set = new Set(props.modelValue)
+    const set = new Set(model.value)
     if (set.has(id)) set.delete(id)
     else set.add(id)
-    emit(
-        "update:modelValue",
-        props.available.filter((p) => set.has(p)),
-    )
+    model.value = props.available.filter((p) => set.has(p))
 }
 </script>
 
 <template>
-    <div class="picker" role="group" aria-label="Plataformas">
+    <div class="flex flex-wrap gap-2" role="group" aria-label="Plataformas">
         <button
             v-for="id in available"
             :key="id"
             type="button"
-            class="opt"
-            :class="{ on: modelValue.includes(id) }"
-            :aria-pressed="modelValue.includes(id)"
+            :aria-pressed="model.includes(id)"
+            :class="
+                cn(
+                    'flex h-9 cursor-pointer items-center gap-2 rounded-md border-2 px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                    model.includes(id)
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border/50 bg-card text-muted-foreground hover:border-primary/30',
+                )
+            "
             @click="toggle(id)"
         >
             <PlatformIcon :id="id" :size="15" />
             {{ platformInfo(id).name }}
+            <Check v-if="model.includes(id)" class="size-3.5 text-primary" />
         </button>
     </div>
 </template>
-
-<style scoped>
-.picker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.opt {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    height: 32px;
-    padding: 0 12px 0 10px;
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    background: var(--surface);
-    color: var(--ink-2);
-    font: inherit;
-    font-weight: 600;
-    font-size: 13px;
-    cursor: pointer;
-    opacity: 0.75;
-}
-
-.opt:hover {
-    opacity: 1;
-}
-
-.opt.on {
-    opacity: 1;
-    border-color: var(--ink);
-    color: var(--ink);
-    box-shadow: inset 0 0 0 1px var(--ink);
-}
-</style>

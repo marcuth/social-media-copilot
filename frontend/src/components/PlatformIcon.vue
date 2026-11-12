@@ -2,7 +2,7 @@
 import { computed } from "vue"
 import { siFacebook, siInstagram, siPinterest, siThreads, siTiktok, siX, siYoutube } from "simple-icons"
 
-import { platformInfo } from "../lib/store"
+import { platformInfo } from "@/lib/store"
 
 const props = withDefaults(defineProps<{ id: string; size?: number; mono?: boolean }>(), { size: 16, mono: false })
 
@@ -21,7 +21,7 @@ const LETTERS: Record<string, string> = { linkedin: "in", kwai: "K" }
 const info = computed(() => platformInfo(props.id))
 // Black-branded marks follow the text colour so they stay visible in dark mode.
 const INK_MARKS = new Set(["x", "threads"])
-const color = computed(() => (props.mono || INK_MARKS.has(props.id) ? "var(--ink)" : info.value.color))
+const color = computed(() => (props.mono || INK_MARKS.has(props.id) ? "var(--foreground)" : info.value.color))
 </script>
 
 <template>

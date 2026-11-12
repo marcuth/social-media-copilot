@@ -10,40 +10,8 @@ const html = computed(() => DOMPurify.sanitize(marked.parse(props.source || "", 
 
 <template>
     <!-- eslint-disable-next-line vue/no-v-html -->
-    <div class="md" v-html="html"></div>
+    <div
+        class="text-sm leading-relaxed break-words [&_blockquote]:mb-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:text-muted-foreground [&_h1]:mt-3 [&_h1]:mb-1 [&_h1]:font-heading [&_h1]:font-bold [&_h2]:mt-3 [&_h2]:mb-1 [&_h2]:font-heading [&_h2]:font-bold [&_h3]:mt-3 [&_h3]:mb-1 [&_h3]:font-semibold [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_strong]:font-bold [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-5"
+        v-html="html"
+    ></div>
 </template>
-
-<style scoped>
-.md {
-    line-height: 1.6;
-    overflow-wrap: anywhere;
-}
-
-.md :deep(h1),
-.md :deep(h2),
-.md :deep(h3) {
-    font-size: 15px;
-    margin: 14px 0 4px;
-}
-
-.md :deep(p) {
-    margin: 0 0 8px;
-}
-
-.md :deep(ul),
-.md :deep(ol) {
-    margin: 0 0 8px;
-    padding-left: 20px;
-}
-
-.md :deep(strong) {
-    color: var(--ink);
-}
-
-.md :deep(blockquote) {
-    margin: 0 0 8px;
-    padding-left: 10px;
-    border-left: 3px solid var(--line-strong);
-    color: var(--ink-2);
-}
-</style>

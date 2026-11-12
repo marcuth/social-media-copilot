@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue"
 import { useRouter } from "vue-router"
-import { Check, Plus, Wand2 } from "lucide-vue-next"
+import { Check, Lightbulb, Plus, Wand2 } from "@lucide/vue"
 
-import { AIService, PostService, isCancel, type Idea } from "../lib/api"
-import { formatLabel, profileById, store, themesOf } from "../lib/store"
-import { toast, toastError } from "../lib/toast"
+import AppSelect from "@/components/AppSelect.vue"
+import PageHeader from "@/components/PageHeader.vue"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { AIService, PostService, isCancel, type Idea } from "@/lib/api"
+import { formatLabel, profileById, store, themesOf } from "@/lib/store"
+import { toast, toastError } from "@/lib/toast"
 
 const router = useRouter()
 
@@ -17,7 +23,15 @@ const instructions = ref("")
 const ideas = ref<(Idea & { added?: number })[]>([])
 const busy = ref(false)
 
-const themes = computed(() => themesOf(profileId.value))
+const profileOptions = computed(() => store.profiles.map((p) => ({ value: p.id as number | null, label: p.name })))
+const themeOptions = computed(() => [
+    { value: null, label: "Qualquer tema" },
+    ...themesOf(profileId.value).map((t) => ({ value: t.id, label: t.name })),
+])
+const formatOptions = computed(() => [
+    { value: "", label: "Variado" },
+    ...store.catalog.formats.map((f) => ({ value: f.id, label: f.label })),
+])
 watch(profileId, () => (themeId.value = null))
 
 async function generate(): Promise<void> {
@@ -64,12 +78,7 @@ async function add(idea: Idea & { added?: number }, openAfter: boolean): Promise
             scheduledAt: null,
             publishedAt: null,
             postponeCount: 0,
-            platforms: profile.platforms.map((p) => ({
-                platform: p.platform,
-                status: "pending",
-                url: "",
-                publishedAt: null,
-            })),
+            platforms: profile.platforms.map((p) => ({ platform: p.platform, status: "pending", url: "", publishedAt: null })),
             createdAt: "",
             updatedAt: "",
         })
@@ -83,159 +92,101 @@ async function add(idea: Idea & { added?: number }, openAfter: boolean): Promise
 </script>
 
 <template>
-    <div class="page ideas">
-        <header class="page-head">
-            <div>
-                <h1>Ideias com IA</h1>
-                <p>Peça ideias para um perfil e mande as boas direto para a produção.</p>
+    <div class="flex h-full flex-col">
+        <PageHeader
+            title="Ideias com IA"
+            description="Peça ideias para um perfil e mande as boas direto para a produção"
+            :icon="Lightbulb"
+        />
+
+        <div class="flex-1 overflow-y-auto px-8 py-6">
+            <div class="mx-auto max-w-4xl space-y-6">
+                <div
+                    v-if="!store.profiles.length"
+                    class="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/60 bg-card/40 p-8 py-16 text-center"
+                >
+                    <Lightbulb class="size-8 text-muted-foreground" />
+                    <h2 class="font-heading text-lg font-bold">Crie um perfil primeiro</h2>
+                    <p class="max-w-md text-sm text-muted-foreground">
+                        As ideias partem do nicho, do público e do tom de voz do perfil.
+                    </p>
+                    <Button as-child><RouterLink to="/profiles?new=1">Criar perfil</RouterLink></Button>
+                </div>
+
+                <template v-else>
+                    <form class="space-y-4 rounded-xl border border-border/60 bg-card p-6 shadow-xs" @submit.prevent="generate">
+                        <div class="grid gap-4 md:grid-cols-[1fr_1fr_1fr_110px]">
+                            <div class="space-y-2">
+                                <Label>Perfil</Label>
+                                <AppSelect v-model="profileId" :options="profileOptions" label="Perfil" />
+                            </div>
+                            <div class="space-y-2">
+                                <Label>Tema</Label>
+                                <AppSelect v-model="themeId" :options="themeOptions" label="Tema" />
+                            </div>
+                            <div class="space-y-2">
+                                <Label>Formato</Label>
+                                <AppSelect v-model="format" :options="formatOptions" label="Formato" />
+                            </div>
+                            <div class="space-y-2">
+                                <Label for="count">Quantidade</Label>
+                                <Input id="count" v-model.number="count" type="number" min="1" max="20" />
+                            </div>
+                        </div>
+                        <div class="flex items-end gap-3">
+                            <div class="flex-1 space-y-2">
+                                <Label for="direction">Direção (opcional)</Label>
+                                <Input
+                                    id="direction"
+                                    v-model="instructions"
+                                    placeholder="Ex.: ideias para a Black Friday, com bastidores"
+                                />
+                            </div>
+                            <Button type="submit" :disabled="busy || !profileId">
+                                <Wand2 /> {{ busy ? "Pensando…" : "Gerar ideias" }}
+                            </Button>
+                        </div>
+                    </form>
+
+                    <ol v-if="ideas.length" class="space-y-3">
+                        <li
+                            v-for="(idea, i) in ideas"
+                            :key="i"
+                            class="flex justify-between gap-6 rounded-xl border border-border/60 bg-card p-5 shadow-xs"
+                        >
+                            <div class="max-w-2xl space-y-1.5">
+                                <h2 class="font-heading text-base font-bold">{{ idea.title }}</h2>
+                                <p v-if="idea.hook" class="text-sm text-muted-foreground italic">“{{ idea.hook }}”</p>
+                                <p class="text-sm">{{ idea.summary }}</p>
+                                <Badge variant="secondary">{{ formatLabel(idea.format) }}</Badge>
+                            </div>
+                            <div class="flex shrink-0 flex-col items-stretch gap-2">
+                                <template v-if="idea.added">
+                                    <span class="flex items-center gap-1.5 text-sm font-semibold text-confirm">
+                                        <Check class="size-4" /> Na produção
+                                    </span>
+                                    <Button variant="outline" size="sm" as-child>
+                                        <RouterLink :to="{ name: 'post', params: { id: idea.added } }">Abrir</RouterLink>
+                                    </Button>
+                                </template>
+                                <template v-else>
+                                    <Button size="sm" @click="add(idea, false)"><Plus /> Adicionar</Button>
+                                    <Button size="sm" variant="ghost" @click="add(idea, true)">Adicionar e abrir</Button>
+                                </template>
+                            </div>
+                        </li>
+                    </ol>
+                    <div
+                        v-else-if="!busy"
+                        class="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/60 bg-card/40 p-8 py-16 text-center"
+                    >
+                        <Lightbulb class="size-8 text-muted-foreground" />
+                        <p class="max-w-md text-sm text-muted-foreground">
+                            As ideias aparecem aqui. Elas entram na produção como “Ideia”, com o gancho nas anotações.
+                        </p>
+                    </div>
+                </template>
             </div>
-        </header>
-
-        <div v-if="!store.profiles.length" class="panel empty">
-            <h3>Crie um perfil primeiro</h3>
-            <p>As ideias partem do nicho, do público e do tom de voz do perfil.</p>
-            <RouterLink to="/profiles" class="btn primary">Criar perfil</RouterLink>
         </div>
-
-        <template v-else>
-            <form class="panel controls" @submit.prevent="generate">
-                <label class="field">
-                    <span>Perfil</span>
-                    <select v-model="profileId" class="select">
-                        <option v-for="p in store.profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
-                    </select>
-                </label>
-                <label class="field">
-                    <span>Tema</span>
-                    <select v-model="themeId" class="select">
-                        <option :value="null">Qualquer tema</option>
-                        <option v-for="t in themes" :key="t.id" :value="t.id">{{ t.name }}</option>
-                    </select>
-                </label>
-                <label class="field">
-                    <span>Formato</span>
-                    <select v-model="format" class="select">
-                        <option value="">Variado</option>
-                        <option v-for="f in store.catalog.formats" :key="f.id" :value="f.id">{{ f.label }}</option>
-                    </select>
-                </label>
-                <label class="field narrow">
-                    <span>Quantidade</span>
-                    <input v-model.number="count" type="number" min="1" max="20" class="input" />
-                </label>
-                <label class="field wide">
-                    <span>Direção (opcional)</span>
-                    <input
-                        v-model="instructions"
-                        class="input"
-                        placeholder="Ex.: ideias para a Black Friday, com bastidores"
-                    />
-                </label>
-                <button class="btn accent" :disabled="busy || !profileId">
-                    <Wand2 /> {{ busy ? "Pensando…" : "Gerar ideias" }}
-                </button>
-            </form>
-
-            <ol v-if="ideas.length" class="list">
-                <li v-for="(idea, i) in ideas" :key="i" class="idea panel">
-                    <div class="idea-main">
-                        <h2>{{ idea.title }}</h2>
-                        <p v-if="idea.hook" class="hook">“{{ idea.hook }}”</p>
-                        <p class="summary">{{ idea.summary }}</p>
-                        <span class="chip">{{ formatLabel(idea.format) }}</span>
-                    </div>
-                    <div class="idea-actions">
-                        <template v-if="idea.added">
-                            <span class="added"><Check :size="15" /> Na produção</span>
-                            <RouterLink class="btn sm" :to="{ name: 'post', params: { id: idea.added } }">Abrir</RouterLink>
-                        </template>
-                        <template v-else>
-                            <button class="btn sm" @click="add(idea, false)"><Plus /> Adicionar</button>
-                            <button class="btn ghost sm" @click="add(idea, true)">Adicionar e abrir</button>
-                        </template>
-                    </div>
-                </li>
-            </ol>
-            <p v-else-if="!busy" class="muted hint">
-                As ideias aparecem aqui. Elas entram na produção como “Ideia”, com o gancho nas anotações.
-            </p>
-        </template>
     </div>
 </template>
-
-<style scoped>
-.ideas {
-    max-width: 1100px;
-}
-
-.controls {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 110px;
-    gap: 12px;
-    align-items: end;
-    padding: 18px;
-    margin-bottom: 20px;
-}
-
-.controls .wide {
-    grid-column: 1 / 4;
-}
-
-.list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.idea {
-    display: flex;
-    gap: 20px;
-    justify-content: space-between;
-    padding: 16px 18px;
-}
-
-.idea-main {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    max-width: 72ch;
-}
-
-.idea h2 {
-    font-size: 17px;
-}
-
-.hook {
-    font-style: italic;
-    color: var(--ink-2);
-}
-
-.summary {
-    color: var(--ink-2);
-}
-
-.idea-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
-    flex: none;
-}
-
-.added {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--ok);
-    font-weight: 700;
-    font-size: 13px;
-}
-
-.hint {
-    max-width: 60ch;
-}
-</style>
