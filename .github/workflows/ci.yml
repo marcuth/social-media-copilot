@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Format, Lint and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Fix frontend lint and format
+        working-directory: frontend
+        run: |
+          npm run lint:fix
+          npm run format
+
+      - name: Fix backend format
+        run: |
+          gofmt -w main.go internal
+          go mod tidy
+
+      # Dependabot and fork PRs get a read-only token, so they only run the checks.
+      - name: Commit changes
+        if: github.actor != 'dependabot[bot]' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "chore: auto format and lint fix [skip ci]"
+          branch: ${{ github.head_ref || github.ref_name }}
+          commit_user_name: github-actions[bot]
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+
+      - name: Frontend lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Frontend build (type check + bundle)
+        working-directory: frontend
+        run: npm run build
+
+      # The main package needs CGO and GTK on Linux; the app logic lives in internal/.
+      - name: Backend vet
+        run: go vet ./internal/...
+
+      - name: Backend tests
+        run: go test ./internal/...
