@@ -60,7 +60,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp bin/social-media-copilot.exe "social-media-copilot-${TAG}-windows-amd64.exe"
-          cp build/windows/nsis/social-media-copilot-*-installer.exe "social-media-copilot-${TAG}-windows-amd64-setup.exe"
+          cp bin/social-media-copilot-amd64-installer.exe "social-media-copilot-${TAG}-windows-amd64-setup.exe"
           gh release upload "$TAG" social-media-copilot-${TAG}-windows-amd64*.exe --clobber
 
   linux:

@@ -3,11 +3,11 @@ Version=1.0
 Name=Social Media Copilot
 Comment=Agendamento e criação de conteúdo para redes sociais com IA
 # The Exec line includes %u to pass the URL to the application
-Exec=/usr/local/bin/social-media-copilot.exe %u
+Exec=/usr/local/bin/social-media-copilot %u
 Terminal=false
 Type=Application
-Icon=social-media-copilot.exe
+Icon=social-media-copilot
 Categories=Utility;
-StartupWMClass=social-media-copilot.exe
+StartupWMClass=social-media-copilot
 
  
