@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=Social Media Copilot
+Comment=Agendamento e criação de conteúdo para redes sociais com IA
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/social-media-copilot.exe %u
+Terminal=false
+Type=Application
+Icon=social-media-copilot.exe
+Categories=Utility;
+StartupWMClass=social-media-copilot.exe
+
+ 

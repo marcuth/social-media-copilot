@@ -1,0 +1,40 @@
+# Build output
+bin/
+frontend/dist/
+*.syso
+*.exe
+*.msi
+*.msix
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+
+# Wails / Task caches
+.task/
+.wails/
+
+# Dependencies
+frontend/node_modules/
+
+# Local databases (the app stores its data outside the repo, but keep test copies out)
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.*
+*.local
+
+# Editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

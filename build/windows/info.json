@@ -1,0 +1,17 @@
+{
+	"fixed": {
+		"file_version": "0.1.0",
+		"product_version": "0.1.0"
+	},
+	"info": {
+		"0409": {
+			"FileVersion": "0.1.0",
+			"ProductVersion": "0.1.0",
+			"CompanyName": "Marcuth",
+			"FileDescription": "Agendamento e criação de conteúdo para redes sociais com IA",
+			"LegalCopyright": "© 2026 Marcuth",
+			"ProductName": "Social Media Copilot",
+			"Comments": ""
+		}
+	}
+}
