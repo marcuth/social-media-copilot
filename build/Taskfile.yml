@@ -194,7 +194,9 @@ tasks:
     generates:
       - "windows/icon.ico"
     cmds:
-      - wails3 generate icons -input appicon.png -windowsfilename windows/icon.ico
+      # An empty -macfilename skips the macOS icon: its default path doesn't
+      # exist (there is no build/darwin) and the tool fails instead of creating it.
+      - wails3 generate icons -input appicon.png -windowsfilename windows/icon.ico -macfilename ""
 
   dev:frontend:
     summary: Runs the frontend in development mode
