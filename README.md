@@ -6,7 +6,7 @@ Tudo fica no seu computador, num banco SQLite local. A IA funciona com o provedo
 
 ## O que dá para fazer
 
-- **Perfis**: cada perfil é um canal ou marca. Você escolhe em quais plataformas ele publica (YouTube, Shorts, TikTok, Instagram, Facebook, X, Threads, LinkedIn, Pinterest, Kwai), o @ em cada uma, o nicho, o público e o tom de voz.
+- **Perfis**: cada perfil é um canal ou marca. Você escolhe em quais plataformas ele publica (YouTube, TikTok, Instagram, Facebook, X, Threads, LinkedIn, Pinterest, Kwai), o @ em cada uma, o nicho, o público e o tom de voz.
 - **Temas**: os pilares de conteúdo de cada perfil, usados como filtro e como contexto para a IA.
 - **Posts**: título, descrição, tags, hashtags, roteiro (Markdown), anotações, formato, etapa de produção e data. Cada post escolhe em quais plataformas do perfil vai sair, e você marca a publicação plataforma por plataforma (com link).
 - **Calendário**: visão mensal com arrastar e soltar, lista de atrasados e de posts sem data.

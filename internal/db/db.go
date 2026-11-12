@@ -97,6 +97,16 @@ var migrations = []string{
 		updated_at TEXT NOT NULL
 	);
 	`,
+	// YouTube Shorts stopped being a separate platform: it is the "short"
+	// format published on YouTube.
+	`
+	INSERT OR IGNORE INTO profile_platforms (profile_id, platform, handle)
+		SELECT profile_id, 'youtube', handle FROM profile_platforms WHERE platform = 'youtube_shorts';
+	DELETE FROM profile_platforms WHERE platform = 'youtube_shorts';
+	INSERT OR IGNORE INTO post_platforms (post_id, platform, status, url, published_at)
+		SELECT post_id, 'youtube', status, url, published_at FROM post_platforms WHERE platform = 'youtube_shorts';
+	DELETE FROM post_platforms WHERE platform = 'youtube_shorts';
+	`,
 }
 
 // DefaultPath returns the database location inside the user's config dir.

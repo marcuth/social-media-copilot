@@ -18,8 +18,7 @@ type Option struct {
 }
 
 var Platforms = []Platform{
-	{"youtube", "YouTube", "#FF0033", "Título até 100 caracteres (ideal 50-70) com a palavra-chave no início; descrição longa com resumo, palavras-chave e capítulos quando fizer sentido; tags relevantes (até 500 caracteres no total); 3 a 5 hashtags."},
-	{"youtube_shorts", "YouTube Shorts", "#FF4E45", "Título curto e direto (até 60 caracteres); descrição de 1-2 frases; inclua #shorts entre as hashtags; 3 a 5 hashtags."},
+	{"youtube", "YouTube", "#FF0033", "Vídeo longo: título até 100 caracteres (ideal 50-70) com a palavra-chave no início, descrição longa com resumo, palavras-chave e capítulos quando fizer sentido, tags relevantes e 3 a 5 hashtags. Shorts (vídeo curto): título curto e direto (até 60 caracteres), descrição de 1-2 frases e #shorts entre as hashtags."},
 	{"tiktok", "TikTok", "#25F4EE", "Legenda curta com gancho na primeira linha (até 150 caracteres é o ideal); 3 a 6 hashtags misturando nicho e alcance amplo."},
 	{"instagram", "Instagram", "#E1306C", "Legenda com gancho na primeira linha, corpo escaneável com quebras de linha e chamada para ação; 5 a 15 hashtags de nicho."},
 	{"facebook", "Facebook", "#1877F2", "Texto conversacional, pergunta para engajamento; poucas hashtags (1 a 3)."},

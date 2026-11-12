@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue"
-import { siFacebook, siInstagram, siPinterest, siThreads, siTiktok, siX, siYoutube, siYoutubeshorts } from "simple-icons"
+import { siFacebook, siInstagram, siPinterest, siThreads, siTiktok, siX, siYoutube } from "simple-icons"
 
 import { platformInfo } from "../lib/store"
 
@@ -9,7 +9,6 @@ const props = withDefaults(defineProps<{ id: string; size?: number; mono?: boole
 // LinkedIn and Kwai are not in simple-icons; they get a lettermark.
 const PATHS: Record<string, string> = {
     youtube: siYoutube.path,
-    youtube_shorts: siYoutubeshorts.path,
     tiktok: siTiktok.path,
     instagram: siInstagram.path,
     facebook: siFacebook.path,
