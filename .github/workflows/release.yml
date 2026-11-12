@@ -1,0 +1,109 @@
+name: Release
+
+# Builds the installers and attaches them to the GitHub release.
+# Publish a release (tag `vX.Y.Z`) or run it by hand with an existing tag.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and upload to (e.g. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.tag }}
+  WAILS_VERSION: v3.1.0
+
+jobs:
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Wails CLI and NSIS
+        run: |
+          go install github.com/wailsapp/wails/v3/cmd/wails3@${WAILS_VERSION}
+          choco install nsis -y --no-progress
+          echo "C:\Program Files (x86)\NSIS" >> "$GITHUB_PATH"
+
+      - name: Set app version from the tag
+        run: |
+          version="${TAG#v}"
+          sed -i "s/^\(  version: \)\"[^\"]*\"/\1\"$version\"/" build/config.yml
+          sed -i "s/\"file_version\": \"[^\"]*\"/\"file_version\": \"$version\"/; s/\"product_version\": \"[^\"]*\"/\"product_version\": \"$version\"/" build/windows/info.json
+
+      - name: Build and package
+        run: wails3 package
+
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp bin/social-media-copilot.exe "social-media-copilot-${TAG}-windows-amd64.exe"
+          cp build/windows/nsis/social-media-copilot-*-installer.exe "social-media-copilot-${TAG}-windows-amd64-setup.exe"
+          gh release upload "$TAG" social-media-copilot-${TAG}-windows-amd64*.exe --clobber
+
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev libfuse2
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@${WAILS_VERSION}
+
+      - name: Set app version from the tag
+        run: |
+          version="${TAG#v}"
+          sed -i "s/^\(  version: \)\"[^\"]*\"/\1\"$version\"/" build/config.yml
+          sed -i "s/^version: \"[^\"]*\"/version: \"$version\"/" build/linux/nfpm/nfpm.yaml
+
+      - name: Build and package
+        run: |
+          wails3 task linux:create:appimage
+          wails3 task linux:create:deb
+
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp bin/*.AppImage "social-media-copilot-${TAG}-linux-amd64.AppImage"
+          cp bin/*.deb "social-media-copilot-${TAG}-linux-amd64.deb"
+          gh release upload "$TAG" "social-media-copilot-${TAG}-linux-amd64.AppImage" "social-media-copilot-${TAG}-linux-amd64.deb" --clobber
