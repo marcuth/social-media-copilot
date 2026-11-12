@@ -23,7 +23,7 @@ go install github.com/wailsapp/wails/v3/cmd/wails3@v3.1.0
 
 wails3 dev      # app com hot reload
 wails3 build    # gera bin/social-media-copilot(.exe)
-wails3 package  # instalador da plataforma atual
+wails3 package  # instalador (Windows: NSIS; Linux: AppImage, deb, rpm)
 go test ./...   # testes do backend
 ```
 
@@ -32,7 +32,7 @@ O banco fica em `<pasta de configuração do usuário>/social-media-copilot/soci
 ## Stack
 
 - [Wails v3](https://v3.wails.io) (Go + WebView nativo) e Go 1.26
-- Vue 3 + TypeScript + Vite
+- Vue 3 + TypeScript + Vite, Tailwind CSS 4 e [shadcn-vue](https://www.shadcn-vue.com)
 - SQLite via [modernc.org/sqlite](https://pkg.go.dev/modernc.org/sqlite) (sem CGO)
 - [GoAI](https://github.com/zendev-sh/goai) para falar com os provedores de IA
 

@@ -24,10 +24,13 @@ cd frontend && npx vue-tsc --noEmit   # frontend type check
 - `internal/services`: every exported method becomes a TS function in `frontend/bindings` (generated, do not edit). Methods taking `context.Context` are cancellable from JS via the returned `CancellablePromise`.
   - `PostService`: CRUD, platform publication state, `Postpone` (days / date / next free day, optional cascade over later unpublished posts of the profile), `Reschedule` (drag on calendar; moving later counts as a postponement).
   - `ProviderService` + `AIService`: AI providers are stored rows (`openai_compatible`, `anthropic`, `google`, `ollama`) turned into GoAI models by `buildModel`. Scripts stream through the `ai:delta` event, routed by a `requestId` chosen in the frontend. Metadata/ideas use `goai.GenerateObject` and fall back to plain text + JSON extraction for models without structured output.
-- Frontend (`frontend/src`): `lib/api.ts` is the only place importing bindings (and normalises Go nil slices); `lib/store.ts` holds catalog, profiles, themes, providers and the global profile filter; views in `views/`, shared pieces in `components/`.
+- Frontend (`frontend/src`): `lib/api.ts` is the only place importing bindings (and normalises Go nil slices); `lib/store.ts` holds catalog, profiles, themes, providers and the global profile filter; `lib/confirm.ts` + `components/ConfirmDialog.vue` replace `window.confirm`; `lib/theme.ts` toggles the `.dark` class (light / dark / system). Views in `views/`, app components in `components/`, shadcn-vue components in `components/ui/`.
 
 ## Conventions
 
 - Go errors returned to the UI are written in pt-BR, in plain language.
 - Frontend: 4-space indent, double quotes, no semicolons; `interface` for object shapes; no `any`.
-- Styling: design tokens in `src/styles/main.css` (cool paper + indigo ink, a single "REC" pink accent reserved for today/overdue/live AI). Light and dark follow the system.
+- UI: Tailwind CSS 4 + shadcn-vue (reka-ui), with the same design system as Indie Copilot (Nunito Sans body, Merriweather `font-heading` titles, `--radius: 1rem`, cards `rounded-xl border border-border/60 bg-card shadow-xs`, pages = `PageHeader` + `px-8 py-6` content). Only the primary colour differs (`#e11d62`). Tokens live in `src/styles/main.css`.
+- Add shadcn components with `npx shadcn-vue@latest add <name>` (run in `frontend/`), never by hand; then align variants with Indie Copilot's (`button` has `cursor-pointer`, translucent `outline`, `lg` = h-12; `badge` is `rounded-md`).
+- Use `AppSelect` instead of raw `Select` when values can be numbers or null (reka-ui items need string values).
+- Icons: `@lucide/vue`. Platform marks: `components/PlatformIcon.vue` (simple-icons).
