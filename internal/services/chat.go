@@ -186,7 +186,14 @@ func (s *ChatService) SendMessage(ctx context.Context, r ChatRequest) (ChatReply
 
 	contextText := s.contextText(r)
 	catalogText, tools := s.skillTools()
-	text, err := s.stream(ctx, model, r.RequestID, chatSystem+"\n\n"+catalogText+"\n\n"+contextText, msgs, tools)
+	system := chatSystem + "\n\n" + catalogText
+	if s.AI.Web != nil {
+		if webTools := s.AI.Web.chatTools(r.RequestID, s.country(r.ProfileID)); len(webTools) > 0 {
+			tools = append(tools, webTools...)
+			system += "\n\n" + webToolRules
+		}
+	}
+	text, err := s.stream(ctx, model, r.RequestID, system+"\n\n"+contextText, msgs, tools)
 	if err != nil && text == "" && len(tools) > 0 && ctx.Err() == nil {
 		// Some models (often local ones) reject tool definitions: retry without them.
 		text, err = s.stream(ctx, model, r.RequestID, chatSystem+"\n\n"+contextText, msgs, nil)
@@ -204,6 +211,17 @@ func (s *ChatService) SendMessage(ctx context.Context, r ChatRequest) (ChatReply
 	}
 	reply.Session, err = s.getSession(session.ID)
 	return reply, err
+}
+
+// country picks the search region from the focused profile, or the first one.
+func (s *ChatService) country(profileID *int64) string {
+	profiles, _ := s.AI.Profiles.ListProfiles()
+	for _, p := range profiles {
+		if profileID == nil || p.ID == *profileID {
+			return countryFor(p.Language)
+		}
+	}
+	return ""
 }
 
 func (s *ChatService) stream(ctx context.Context, model goaiModel, requestID, system string, msgs []provider.Message, tools []goai.Tool) (string, error) {

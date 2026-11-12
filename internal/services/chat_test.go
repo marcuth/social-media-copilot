@@ -20,6 +20,9 @@ type fakeOpenAI struct {
 	bodies    []map[string]any
 	rejectAll bool   // reject requests that carry tools
 	callSkill string // first answer is a load_skill call for this id
+	// callTool/callArgs make the first answer a call to any tool.
+	callTool string
+	callArgs map[string]string
 }
 
 func (f *fakeOpenAI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -34,9 +37,12 @@ func (f *fakeOpenAI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/event-stream")
-	if f.callSkill != "" && !strings.Contains(string(raw), `"role":"tool"`) {
-		args, _ := json.Marshal(map[string]string{"id": f.callSkill})
-		fmt.Fprintf(w, "data: {\"id\":\"1\",\"object\":\"chat.completion.chunk\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":\"load_skill\",\"arguments\":%q}}]},\"finish_reason\":null}]}\n\n", string(args))
+	if f.callSkill != "" {
+		f.callTool, f.callArgs = "load_skill", map[string]string{"id": f.callSkill}
+	}
+	if f.callTool != "" && !strings.Contains(string(raw), `"role":"tool"`) {
+		args, _ := json.Marshal(f.callArgs)
+		fmt.Fprintf(w, "data: {\"id\":\"1\",\"object\":\"chat.completion.chunk\",\"choices\":[{\"index\":0,\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call_1\",\"type\":\"function\",\"function\":{\"name\":%q,\"arguments\":%q}}]},\"finish_reason\":null}]}\n\n", f.callTool, string(args))
 		fmt.Fprint(w, "data: {\"id\":\"1\",\"object\":\"chat.completion.chunk\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n")
 		fmt.Fprint(w, "data: [DONE]\n\n")
 		return
@@ -64,8 +70,10 @@ func setupChat(t *testing.T, fake *fakeOpenAI) (*ChatService, models.Profile, *[
 	ai := &AIService{Profiles: profiles, Providers: providers, Skills: &SkillService{DB: profiles.DB},
 		Emit: func(_ string, data any) {
 			mu.Lock()
-			deltas = append(deltas, data.(AIDelta))
-			mu.Unlock()
+			defer mu.Unlock()
+			if d, ok := data.(AIDelta); ok {
+				deltas = append(deltas, d)
+			}
 		}}
 	return &ChatService{DB: profiles.DB, AI: ai, Posts: posts}, profile, &deltas
 }

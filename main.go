@@ -15,6 +15,7 @@ var assets embed.FS
 
 func init() {
 	application.RegisterEvent[services.AIDelta](services.EventAIDelta)
+	application.RegisterEvent[services.AIStatus](services.EventAIStatus)
 }
 
 func main() {
@@ -32,7 +33,8 @@ func main() {
 	posts := &services.PostService{DB: conn}
 	providers := &services.ProviderService{DB: conn}
 	skillSvc := &services.SkillService{DB: conn}
-	ai := &services.AIService{Profiles: profiles, Providers: providers, Skills: skillSvc}
+	web := &services.WebService{DB: conn, Providers: providers}
+	ai := &services.AIService{Profiles: profiles, Providers: providers, Skills: skillSvc, Web: web}
 	chat := &services.ChatService{DB: conn, AI: ai, Posts: posts}
 
 	app := application.New(application.Options{
@@ -46,12 +48,15 @@ func main() {
 			application.NewService(ai),
 			application.NewService(skillSvc),
 			application.NewService(chat),
+			application.NewService(web),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
 		},
 	})
-	ai.Emit = func(name string, data any) { app.Event.Emit(name, data) }
+	emit := func(name string, data any) { app.Event.Emit(name, data) }
+	ai.Emit = emit
+	web.Emit = emit
 
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:            "Social Media Copilot",
