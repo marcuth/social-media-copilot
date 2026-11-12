@@ -105,7 +105,10 @@ function onKeydown(e: KeyboardEvent): void {
     }
 }
 
+// The chat sheet/dialog is closed while asking, otherwise it would cover the
+// confirmation; it comes back afterwards with the conversation intact.
 async function removeSession(id: number, title: string): Promise<void> {
+    chat.open = false
     const ok = await confirmDialog({
         title: "Excluir conversa",
         description: `"${title}" será excluída.`,
@@ -113,6 +116,7 @@ async function removeSession(id: number, title: string): Promise<void> {
         destructive: true,
     })
     if (ok) await deleteSession(id)
+    chat.open = true
 }
 
 async function scrollToEnd(): Promise<void> {
