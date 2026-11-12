@@ -10,8 +10,11 @@ wails3 build               # bin/social-media-copilot(.exe); also regenerates bi
 wails3 generate bindings -clean=true -ts -i   # after changing any exported service method/model
 go test ./...              # backend tests (internal/services/posts_test.go)
 go vet ./...
-cd frontend && npx vue-tsc --noEmit   # frontend type check
+cd frontend && npm run ci             # eslint + prettier --check + vue-tsc
+cd frontend && npm run lint:fix && npm run format
 ```
+
+CI (`.github/workflows/ci.yml`, on push/PR to `main`) runs `lint:fix`, `format`, `gofmt` and `go mod tidy`, then pushes a `chore: auto format and lint fix [skip ci]` commit as github-actions[bot] when something changed, so the remote is often one commit ahead: `git pull --rebase` before pushing. It then runs `npm run lint`, `npm run build`, `go vet ./internal/...` and `go test ./internal/...` (the `main` package needs CGO + GTK on Linux, so CI doesn't build it). Dependabot updates Go modules, npm (`frontend/`) and actions weekly.
 
 `SMC_DB_PATH` overrides the database location (default: `os.UserConfigDir()/social-media-copilot/social-media-copilot.db`). Use it to try things against a throwaway database.
 
@@ -33,7 +36,8 @@ cd frontend && npx vue-tsc --noEmit   # frontend type check
 ## Conventions
 
 - Go errors returned to the UI are written in pt-BR, in plain language.
-- Frontend: 4-space indent, double quotes, no semicolons; `interface` for object shapes; no `any`.
+- Frontend: Prettier (4 spaces, double quotes, no semicolons, imports sorted by length) and ESLint (`eslint.config.js`); `interface` for object shapes; no `any`.
+- Comments only for what the code can't say (why, gotchas, non-obvious behaviour); don't restate names.
 - UI: Tailwind CSS 4 + shadcn-vue (reka-ui), with the same design system as Indie Copilot (Nunito Sans body, Merriweather `font-heading` titles, `--radius: 1rem`, cards `rounded-xl border border-border/60 bg-card shadow-xs`, pages = `PageHeader` + `px-8 py-6` content). Only the primary colour differs (`#e11d62`). Tokens live in `src/styles/main.css`.
 - Add shadcn components with `npx shadcn-vue@latest add <name>` (run in `frontend/`), never by hand; then align variants with Indie Copilot's (`button` has `cursor-pointer`, translucent `outline`, `lg` = h-12; `badge` is `rounded-md`).
 - Use `AppSelect` instead of raw `Select` when values can be numbers or null (reka-ui items need string values).
