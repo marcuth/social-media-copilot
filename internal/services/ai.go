@@ -11,6 +11,7 @@ import (
 	"github.com/zendev-sh/goai"
 
 	"github.com/marcuth/social-media-copilot/internal/catalog"
+	"github.com/marcuth/social-media-copilot/internal/skills"
 )
 
 // EventAIDelta carries streamed text chunks of a generation to the frontend.
@@ -71,16 +72,17 @@ type ideasEnvelope struct {
 type AIService struct {
 	Profiles  *ProfileService
 	Providers *ProviderService
+	Skills    *SkillService
 	// Emit sends an event to the frontend; set by main once the app exists.
 	Emit func(name string, data any)
 }
 
 const systemBase = `Você é o copiloto de um criador de conteúdo para redes sociais. Você escreve roteiros e metadados prontos para usar, específicos para o perfil e as plataformas indicadas, sem frases genéricas nem clichês de marketing. Responda sempre no idioma do perfil.`
 
-func (s *AIService) contextBlock(profileID int64, themeID *int64, format string, platforms []string) (string, string, error) {
+func (s *AIService) contextBlock(profileID int64, themeID *int64, format string, platforms []string) (string, []string, error) {
 	profile, err := s.Profiles.GetProfile(profileID)
 	if err != nil {
-		return "", "", errors.New("escolha um perfil para a IA ter contexto")
+		return "", nil, errors.New("escolha um perfil para a IA ter contexto")
 	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "## Perfil\nNome: %s\nIdioma: %s\n", profile.Name, profile.Language)
@@ -116,7 +118,7 @@ func (s *AIService) contextBlock(profileID int64, themeID *int64, format string,
 			}
 		}
 	}
-	return b.String(), profile.Language, nil
+	return b.String(), platforms, nil
 }
 
 func writeIf(b *strings.Builder, label, value string) {
@@ -145,6 +147,48 @@ func (s *AIService) model() (goaiModel, error) {
 	return buildModel(p)
 }
 
+// system returns the system prompt with the skills that match the task.
+func (s *AIService) system(task skills.Task, platforms []string, format string) (string, error) {
+	var disabled map[string]bool
+	if s.Skills != nil {
+		d, err := s.Skills.disabled()
+		if err != nil {
+			return "", err
+		}
+		disabled = d
+	}
+	text, err := skills.Render(skills.Match(task, platforms, format, disabled))
+	if err != nil || text == "" {
+		return systemBase, err
+	}
+	return systemBase + "\n\n" + text, nil
+}
+
+// MatchingSkills lists the skills a task would use, so the UI can show them
+// before generating. Task is "script", "metadata" or "ideas".
+func (s *AIService) MatchingSkills(task string, profileID int64, platforms []string, format string) ([]SkillInfo, error) {
+	if len(platforms) == 0 {
+		if p, err := s.Profiles.GetProfile(profileID); err == nil {
+			for _, pp := range p.Platforms {
+				platforms = append(platforms, pp.Platform)
+			}
+		}
+	}
+	var disabled map[string]bool
+	if s.Skills != nil {
+		d, err := s.Skills.disabled()
+		if err != nil {
+			return nil, err
+		}
+		disabled = d
+	}
+	out := []SkillInfo{}
+	for _, sk := range skills.Match(skills.Task(task), platforms, format, disabled) {
+		out = append(out, SkillInfo{ID: sk.ID, Name: sk.Name, Description: sk.Description, Source: sk.Source, License: sk.License, Enabled: true})
+	}
+	return out, nil
+}
+
 // GenerateScript writes a script for the post, streaming chunks through the
 // "ai:delta" event, and returns the full text. Cancelling the call from the
 // frontend stops the generation.
@@ -153,7 +197,11 @@ func (s *AIService) GenerateScript(ctx context.Context, r AIRequest) (string, er
 	if err != nil {
 		return "", err
 	}
-	ctxText, _, err := s.contextBlock(r.ProfileID, r.ThemeID, r.Format, r.Platforms)
+	ctxText, platforms, err := s.contextBlock(r.ProfileID, r.ThemeID, r.Format, r.Platforms)
+	if err != nil {
+		return "", err
+	}
+	system, err := s.system(skills.TaskScript, platforms, r.Format)
 	if err != nil {
 		return "", err
 	}
@@ -175,7 +223,7 @@ func (s *AIService) GenerateScript(ctx context.Context, r AIRequest) (string, er
 	}
 
 	stream, err := goai.StreamText(ctx, model,
-		goai.WithSystem(systemBase),
+		goai.WithSystem(system),
 		goai.WithPrompt(task.String()),
 		goai.WithMaxOutputTokens(8000),
 		goai.WithTimeout(5*time.Minute),
@@ -203,7 +251,11 @@ func (s *AIService) GenerateMetadata(ctx context.Context, r AIRequest) (Metadata
 	if err != nil {
 		return out, err
 	}
-	ctxText, _, err := s.contextBlock(r.ProfileID, r.ThemeID, r.Format, r.Platforms)
+	ctxText, platforms, err := s.contextBlock(r.ProfileID, r.ThemeID, r.Format, r.Platforms)
+	if err != nil {
+		return out, err
+	}
+	system, err := s.system(skills.TaskMetadata, platforms, r.Format)
 	if err != nil {
 		return out, err
 	}
@@ -218,7 +270,7 @@ Crie os metadados de publicação deste conteúdo, respeitando as orientações 
 		prompt += "\nInstruções extras do criador: " + v
 	}
 
-	err = generateJSON(ctx, model, prompt, &out)
+	err = generateJSON(ctx, model, system, prompt, &out)
 	if err != nil {
 		return out, err
 	}
@@ -234,7 +286,11 @@ func (s *AIService) GenerateIdeas(ctx context.Context, r IdeasRequest) ([]Idea, 
 	if err != nil {
 		return nil, err
 	}
-	ctxText, _, err := s.contextBlock(r.ProfileID, r.ThemeID, r.Format, r.Platforms)
+	ctxText, platforms, err := s.contextBlock(r.ProfileID, r.ThemeID, r.Format, r.Platforms)
+	if err != nil {
+		return nil, err
+	}
+	system, err := s.system(skills.TaskIdeas, platforms, r.Format)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +305,7 @@ Sugira %d ideias de conteúdo novas e diferentes entre si para este perfil. Cada
 		prompt += "\nInstruções extras do criador: " + v
 	}
 	var env ideasEnvelope
-	if err := generateJSON(ctx, model, prompt, &env); err != nil {
+	if err := generateJSON(ctx, model, system, prompt, &env); err != nil {
 		return nil, err
 	}
 	out := []Idea{}
@@ -267,11 +323,11 @@ Sugira %d ideias de conteúdo novas e diferentes entre si para este perfil. Cada
 
 // generateJSON asks for structured output; providers without JSON-schema
 // support (many local models) fall back to plain text parsed as JSON.
-func generateJSON[T any](ctx context.Context, model goaiModel, prompt string, out *T) error {
+func generateJSON[T any](ctx context.Context, model goaiModel, system, prompt string, out *T) error {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Minute)
 	defer cancel()
 	res, err := goai.GenerateObject[T](ctx, model,
-		goai.WithSystem(systemBase),
+		goai.WithSystem(system),
 		goai.WithPrompt(prompt),
 		goai.WithMaxOutputTokens(8000),
 	)
@@ -283,7 +339,7 @@ func generateJSON[T any](ctx context.Context, model goaiModel, prompt string, ou
 		return friendlyAIError(ctx.Err())
 	}
 	text, err2 := goai.GenerateText(ctx, model,
-		goai.WithSystem(systemBase+" Responda somente com um objeto JSON válido, sem blocos de código nem texto fora do JSON."),
+		goai.WithSystem(system+"\n\nResponda somente com um objeto JSON válido, sem blocos de código nem texto fora do JSON."),
 		goai.WithPrompt(prompt),
 		goai.WithMaxOutputTokens(8000),
 	)

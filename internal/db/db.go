@@ -107,6 +107,30 @@ var migrations = []string{
 		SELECT post_id, 'youtube', status, url, published_at FROM post_platforms WHERE platform = 'youtube_shorts';
 	DELETE FROM post_platforms WHERE platform = 'youtube_shorts';
 	`,
+	// Key/value settings (e.g. disabled skills) and the free chat.
+	`
+	CREATE TABLE app_settings (
+		key   TEXT PRIMARY KEY,
+		value TEXT NOT NULL
+	);
+
+	CREATE TABLE chat_sessions (
+		id         INTEGER PRIMARY KEY AUTOINCREMENT,
+		title      TEXT NOT NULL,
+		created_at TEXT NOT NULL,
+		updated_at TEXT NOT NULL
+	);
+
+	CREATE TABLE chat_messages (
+		id         INTEGER PRIMARY KEY AUTOINCREMENT,
+		session_id INTEGER NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+		role       TEXT NOT NULL,
+		content    TEXT NOT NULL,
+		model      TEXT NOT NULL DEFAULT '',
+		created_at TEXT NOT NULL
+	);
+	CREATE INDEX idx_chat_messages_session ON chat_messages(session_id);
+	`,
 }
 
 // DefaultPath returns the database location inside the user's config dir.
