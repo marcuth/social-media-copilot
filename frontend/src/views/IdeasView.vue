@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue"
 import { useRouter } from "vue-router"
-import { Check, Lightbulb, Plus, Wand2 } from "@lucide/vue"
+import { BookOpen, Check, Lightbulb, Plus, Wand2 } from "@lucide/vue"
 
 import AppSelect from "@/components/AppSelect.vue"
 import PageHeader from "@/components/PageHeader.vue"
@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { AIService, PostService, isCancel, type Idea } from "@/lib/api"
+import { AIService, PostService, isCancel, type Idea, type SkillInfo } from "@/lib/api"
 import { formatLabel, profileById, store, themesOf } from "@/lib/store"
 import { toast, toastError } from "@/lib/toast"
 
@@ -33,6 +33,16 @@ const formatOptions = computed(() => [
     ...store.catalog.formats.map((f) => ({ value: f.id, label: f.label })),
 ])
 watch(profileId, () => (themeId.value = null))
+
+const skillsUsed = ref<SkillInfo[]>([])
+watch(
+    [profileId, format],
+    async () => {
+        if (!profileId.value) return
+        skillsUsed.value = (await AIService.MatchingSkills("ideas", profileId.value, [], format.value).catch(() => [])) ?? []
+    },
+    { immediate: true },
+)
 
 async function generate(): Promise<void> {
     if (!profileId.value) return
@@ -132,6 +142,10 @@ async function add(idea: Idea & { added?: number }, openAfter: boolean): Promise
                                 <Label for="count">Quantidade</Label>
                                 <Input id="count" v-model.number="count" type="number" min="1" max="20" />
                             </div>
+                        </div>
+                        <div v-if="skillsUsed.length" class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                            <BookOpen class="size-3.5" /> Seguindo:
+                            <Badge v-for="s in skillsUsed" :key="s.id" variant="secondary" :title="s.description">{{ s.name }}</Badge>
                         </div>
                         <div class="flex items-end gap-3">
                             <div class="flex-1 space-y-2">

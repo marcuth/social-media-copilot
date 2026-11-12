@@ -7,9 +7,11 @@ import type * as Svc from "../../bindings/github.com/marcuth/social-media-copilo
 export {
     AIService,
     CatalogService,
+    ChatService,
     PostService,
     ProfileService,
     ProviderService,
+    SkillService,
 } from "../../bindings/github.com/marcuth/social-media-copilot/internal/services"
 export { AiDelta } from "../../bindings/events"
 
@@ -30,6 +32,9 @@ export type AIRequest = Svc.AIRequest
 export type Metadata = Svc.Metadata
 export type Idea = Svc.Idea
 export type AIDelta = Svc.AIDelta
+export type ChatSession = Svc.ChatSession
+export type ChatMessage = Svc.ChatMessage
+export type SkillInfo = Svc.SkillInfo
 
 /** Post with arrays guaranteed non-null. */
 export interface PostN extends Post {

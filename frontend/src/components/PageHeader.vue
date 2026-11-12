@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import type { Component } from "vue"
+import { Bot } from "@lucide/vue"
+
+import { Button } from "@/components/ui/button"
+import { openChat } from "@/lib/chat"
 
 defineProps<{ title: string; description?: string; icon?: Component }>()
 </script>
@@ -17,8 +21,11 @@ defineProps<{ title: string; description?: string; icon?: Component }>()
                 </p>
             </div>
         </div>
-        <div v-if="$slots.actions" class="flex shrink-0 items-center gap-2">
+        <div class="flex shrink-0 items-center gap-2">
             <slot name="actions" />
+            <Button size="sm" title="Conversar com o Copilot" @click="openChat">
+                <Bot class="size-3.5" /> Copilot
+            </Button>
         </div>
     </div>
 </template>

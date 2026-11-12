@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref } from "vue"
-import { Bot, Monitor, Moon, Plus, Settings, Star, Sun, Trash2 } from "@lucide/vue"
+import { BookOpen, Bot, Monitor, Moon, Plus, Settings, Star, Sun, Trash2 } from "@lucide/vue"
 
 import AppSelect from "@/components/AppSelect.vue"
 import PageHeader from "@/components/PageHeader.vue"
+import SkillsSettings from "@/components/SkillsSettings.vue"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -124,6 +125,7 @@ const THEMES: { value: Theme; label: string; icon: typeof Sun }[] = [
                 <Tabs default-value="ai">
                     <TabsList class="mb-6">
                         <TabsTrigger value="ai"><Bot class="mr-1 size-4" /> Provedores de IA</TabsTrigger>
+                        <TabsTrigger value="skills"><BookOpen class="mr-1 size-4" /> Skills</TabsTrigger>
                         <TabsTrigger value="general"><Settings class="mr-1 size-4" /> Geral</TabsTrigger>
                     </TabsList>
 
@@ -198,6 +200,10 @@ const THEMES: { value: Theme; label: string; icon: typeof Sun }[] = [
                                 As chaves de API ficam salvas apenas neste computador, no banco de dados local do app.
                             </p>
                         </div>
+                    </TabsContent>
+
+                    <TabsContent value="skills">
+                        <SkillsSettings />
                     </TabsContent>
 
                     <TabsContent value="general" class="space-y-6">

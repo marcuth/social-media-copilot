@@ -36,3 +36,11 @@ export function GenerateMetadata(r: $models.AIRequest): $CancellablePromise<$mod
 export function GenerateScript(r: $models.AIRequest): $CancellablePromise<string> {
     return $Call.ByID(2406784096, r);
 }
+
+/**
+ * MatchingSkills lists the skills a task would use, so the UI can show them
+ * before generating. Task is "script", "metadata" or "ideas".
+ */
+export function MatchingSkills(task: string, profileID: number, platforms: string[] | null, format: string): $CancellablePromise<$models.SkillInfo[] | null> {
+    return $Call.ByID(2757748413, task, profileID, platforms, format);
+}

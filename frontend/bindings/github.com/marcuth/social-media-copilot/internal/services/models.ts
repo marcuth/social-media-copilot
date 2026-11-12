@@ -4,6 +4,9 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
 import * as catalog$0 from "../catalog/models.js";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as models$0 from "../models/models.js";
 
 /**
  * AIDelta is one streamed chunk, routed by the request id chosen by the caller.
@@ -40,6 +43,59 @@ export interface Catalog {
 }
 
 /**
+ * ChatMessage is one turn of a conversation.
+ */
+export interface ChatMessage {
+    "id": number;
+    "sessionId": number;
+
+    /**
+     * user | assistant
+     */
+    "role": string;
+    "content": string;
+    "model": string;
+    "createdAt": string;
+}
+
+/**
+ * ChatReply is the result of a sent message.
+ */
+export interface ChatReply {
+    "session": ChatSession;
+    "message": ChatMessage;
+}
+
+/**
+ * ChatRequest sends a message. SessionID 0 starts a new conversation.
+ */
+export interface ChatRequest {
+    "sessionId": number;
+    "requestId": string;
+    "content": string;
+
+    /**
+     * ProfileID focuses the context on one profile (nil = every profile).
+     */
+    "profileId": number | null;
+
+    /**
+     * Post is the post open in the editor, including unsaved edits.
+     */
+    "post": models$0.Post | null;
+}
+
+/**
+ * ChatSession is a saved conversation with the copilot.
+ */
+export interface ChatSession {
+    "id": number;
+    "title": string;
+    "createdAt": string;
+    "updatedAt": string;
+}
+
+/**
  * Idea is one content suggestion.
  */
 export interface Idea {
@@ -69,4 +125,21 @@ export interface Metadata {
     "description": string;
     "tags": string[] | null;
     "hashtags": string[] | null;
+}
+
+/**
+ * SkillInfo describes a bundled skill for the settings screen.
+ */
+export interface SkillInfo {
+    "id": string;
+    "name": string;
+    "description": string;
+    "source": string;
+    "license": string;
+
+    /**
+     * AppliesTo explains in plain words when the skill is used automatically.
+     */
+    "appliesTo": string;
+    "enabled": boolean;
 }

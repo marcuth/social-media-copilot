@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue"
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from "vue"
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router"
 import { Events } from "@wailsio/runtime"
-import { ArrowLeft, CalendarClock, Copy, Eye, History, Pencil, Send, Sparkles, Square, Trash2, Wand2 } from "@lucide/vue"
+import { ArrowLeft, BookOpen, CalendarClock, Copy, Eye, History, Pencil, Send, Sparkles, Square, Trash2, Wand2 } from "@lucide/vue"
 
 import AppSelect from "@/components/AppSelect.vue"
 import MarkdownView from "@/components/MarkdownView.vue"
@@ -27,7 +27,9 @@ import {
     type Metadata,
     type PostN,
     type Postponement,
+    type SkillInfo,
 } from "@/lib/api"
+import { chat } from "@/lib/chat"
 import { confirmDialog } from "@/lib/confirm"
 import { formatSchedule } from "@/lib/dates"
 import { STATUS_COLORS, platformInfo, profileById, store, themesOf } from "@/lib/store"
@@ -70,7 +72,7 @@ function blank(): PostN {
 }
 
 const post = ref<PostN>(blank())
-const savedJSON = ref("")
+const savedJSON = ref(JSON.stringify(editable(post.value)))
 const history = ref<Postponement[]>([])
 const saving = ref(false)
 const postponing = ref(false)
@@ -125,6 +127,7 @@ async function load(): Promise<void> {
         history.value = (await PostService.ListPostponements(post.value.id)) ?? []
     } catch (e) {
         toastError(e)
+        leaving = true
         router.replace("/")
     }
 }
@@ -208,6 +211,35 @@ async function setPlatformStatus(platform: string, status: string, url: string):
         toastError(e)
     }
 }
+
+// The chat sees the post being edited, unsaved changes included.
+watchEffect(() => {
+    chat.post = post.value
+})
+onBeforeUnmount(() => {
+    chat.post = null
+})
+
+// Skills each generation will follow, shown before generating.
+const skillsFor = reactive({ script: [] as SkillInfo[], metadata: [] as SkillInfo[] })
+watch(
+    () => [post.value.profileId, post.value.format, selectedPlatforms.value.join(",")],
+    async () => {
+        const p = post.value
+        try {
+            const [script, metadata] = await Promise.all([
+                AIService.MatchingSkills("script", p.profileId, selectedPlatforms.value, p.format),
+                AIService.MatchingSkills("metadata", p.profileId, selectedPlatforms.value, p.format),
+            ])
+            skillsFor.script = script ?? []
+            skillsFor.metadata = metadata ?? []
+        } catch {
+            skillsFor.script = []
+            skillsFor.metadata = []
+        }
+    },
+    { immediate: true },
+)
 
 // ── AI ────────────────────────────────────────────────────────────────────
 const ai = reactive({
@@ -509,6 +541,10 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                             </TabsList>
 
                             <TabsContent value="script" class="space-y-4">
+                                <div v-if="skillsFor.script.length" class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                                    <BookOpen class="size-3.5" /> Seguindo:
+                                    <Badge v-for="s in skillsFor.script" :key="s.id" variant="secondary" :title="s.description">{{ s.name }}</Badge>
+                                </div>
                                 <div class="space-y-2">
                                     <Label>Duração</Label>
                                     <AppSelect v-model="ai.duration" :options="durations" label="Duração" />
@@ -546,6 +582,10 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                             </TabsContent>
 
                             <TabsContent value="metadata" class="space-y-4">
+                                <div v-if="skillsFor.metadata.length" class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                                    <BookOpen class="size-3.5" /> Seguindo:
+                                    <Badge v-for="s in skillsFor.metadata" :key="s.id" variant="secondary" :title="s.description">{{ s.name }}</Badge>
+                                </div>
                                 <p class="text-sm text-muted-foreground">
                                     Usa o título, o roteiro e as plataformas selecionadas para sugerir título, descrição,
                                     tags e hashtags.

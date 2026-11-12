@@ -4,6 +4,7 @@ import { TriangleAlert } from "@lucide/vue"
 
 import AppSidebar from "@/components/AppSidebar.vue"
 import ConfirmDialog from "@/components/ConfirmDialog.vue"
+import CopilotChat from "@/components/CopilotChat.vue"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -37,7 +38,8 @@ onMounted(async () => {
                 </RouterView>
             </SidebarInset>
         </SidebarProvider>
+        <CopilotChat v-if="store.ready" />
         <ConfirmDialog />
-        <Toaster rich-colors position="bottom-right" :theme="theme" />
+        <Toaster rich-colors position="top-center" :theme="theme" />
     </TooltipProvider>
 </template>

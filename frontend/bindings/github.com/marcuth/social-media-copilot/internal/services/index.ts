@@ -3,22 +3,31 @@
 
 import * as AIService from "./aiservice.js";
 import * as CatalogService from "./catalogservice.js";
+import * as ChatService from "./chatservice.js";
 import * as PostService from "./postservice.js";
 import * as ProfileService from "./profileservice.js";
 import * as ProviderService from "./providerservice.js";
+import * as SkillService from "./skillservice.js";
 export {
     AIService,
     CatalogService,
+    ChatService,
     PostService,
     ProfileService,
-    ProviderService
+    ProviderService,
+    SkillService
 };
 
 export type {
     AIDelta,
     AIRequest,
     Catalog,
+    ChatMessage,
+    ChatReply,
+    ChatRequest,
+    ChatSession,
     Idea,
     IdeasRequest,
-    Metadata
+    Metadata,
+    SkillInfo
 } from "./models.js";
