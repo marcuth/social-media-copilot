@@ -9,6 +9,8 @@ import {
     Star,
     Sun,
     Trash2,
+    DatabaseBackup,
+    Globe,
 } from "@lucide/vue"
 import { ref } from "vue"
 
@@ -22,6 +24,8 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProviderService, errorMessage, type AIProvider } from "@/lib/api"
+import WebSettingsPanel from "@/components/WebSettingsPanel.vue"
+import BackupSettings from "@/components/BackupSettings.vue"
 import SkillsSettings from "@/components/SkillsSettings.vue"
 import { Separator } from "@/components/ui/separator"
 import { refreshProviders, store } from "@/lib/store"
@@ -220,6 +224,13 @@ const THEMES: { value: Theme; label: string; icon: typeof Sun }[] = [
                             ><Bot class="mr-1 size-4" /> Provedores de
                             IA</TabsTrigger
                         >
+                        <TabsTrigger value="web"
+                            ><Globe class="mr-1 size-4" /> Web</TabsTrigger
+                        >
+                        <TabsTrigger value="backup"
+                            ><DatabaseBackup class="mr-1 size-4" />
+                            Backup</TabsTrigger
+                        >
                         <TabsTrigger value="skills"
                             ><BookOpen class="mr-1 size-4" />
                             Skills</TabsTrigger
@@ -333,6 +344,14 @@ const THEMES: { value: Theme; label: string; icon: typeof Sun }[] = [
                                 computador, no banco de dados local do app.
                             </p>
                         </div>
+                    </TabsContent>
+
+                    <TabsContent value="web">
+                        <WebSettingsPanel />
+                    </TabsContent>
+
+                    <TabsContent value="backup">
+                        <BackupSettings />
                     </TabsContent>
 
                     <TabsContent value="skills">

@@ -5,14 +5,16 @@ import type * as Svc from "../../bindings/github.com/marcuth/social-media-copilo
 
 export {
     AIService,
+    BackupService,
     CatalogService,
     ChatService,
     PostService,
     ProfileService,
     ProviderService,
     SkillService,
+    WebService,
 } from "../../bindings/github.com/marcuth/social-media-copilot/internal/services"
-export { AiDelta } from "../../bindings/events"
+export { AiDelta, AiStatus } from "../../bindings/events"
 
 export type Profile = Models.Profile
 export type ProfilePlatform = Models.ProfilePlatform
@@ -34,6 +36,9 @@ export type AIDelta = Svc.AIDelta
 export type ChatSession = Svc.ChatSession
 export type ChatMessage = Svc.ChatMessage
 export type SkillInfo = Svc.SkillInfo
+export type WebSettings = Svc.WebSettings
+export type WebStatus = Svc.WebStatus
+export type BackupInfo = Svc.BackupInfo
 
 export interface PostN extends Post {
     tags: string[]

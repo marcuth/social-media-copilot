@@ -4,6 +4,7 @@ import {
     CatalogService,
     ProfileService,
     ProviderService,
+    WebService,
     normProfile,
     type AIProvider,
     type Option,
@@ -11,6 +12,7 @@ import {
     type Profile,
     type ProfilePlatform,
     type Theme,
+    type WebStatus,
 } from "./api"
 
 type ProfileN = Profile & { platforms: ProfilePlatform[] }
@@ -29,6 +31,7 @@ export const store = reactive({
     profiles: [] as ProfileN[],
     themes: [] as Theme[],
     providers: [] as AIProvider[],
+    web: { searchVia: "", fetchVia: "" } as WebStatus,
     /** Global profile filter; null shows every profile. */
     activeProfileId: (Number(localStorage.getItem(ACTIVE_KEY)) || null) as
         number | null,
@@ -65,6 +68,12 @@ export async function refreshProfiles(): Promise<void> {
 
 export async function refreshProviders(): Promise<void> {
     store.providers = (await ProviderService.ListProviders()) ?? []
+    await refreshWebStatus()
+}
+
+/** Which backend answers web searches depends on the provider and settings. */
+export async function refreshWebStatus(): Promise<void> {
+    store.web = await WebService.GetWebStatus()
 }
 
 export function setActiveProfile(id: number | null): void {

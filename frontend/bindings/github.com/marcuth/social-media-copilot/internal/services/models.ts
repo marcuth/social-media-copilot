@@ -8,17 +8,11 @@ import * as catalog$0 from "../catalog/models.js";
 // @ts-ignore: Unused imports
 import * as models$0 from "../models/models.js";
 
-/**
- * AIDelta is one streamed chunk, routed by the request id chosen by the caller.
- */
 export interface AIDelta {
     "requestId": string;
     "delta": string;
 }
 
-/**
- * AIRequest is the context of a post the AI should work on.
- */
 export interface AIRequest {
     "requestId": string;
     "profileId": number;
@@ -31,20 +25,38 @@ export interface AIRequest {
     "notes": string;
     "durationSeconds": number;
     "instructions": string;
+
+    /**
+     * Research searches the web first and gives the results to the model.
+     */
+    "research": boolean;
 }
 
 /**
- * Catalog is everything the frontend needs to render pickers and labels.
+ * AIStatus tells the frontend what a running generation is doing.
  */
+export interface AIStatus {
+    "requestId": string;
+    "text": string;
+}
+
+export interface BackupInfo {
+    "path": string;
+    "sizeBytes": number;
+    "lastBackupAt": string;
+}
+
+export interface BackupResult {
+    "path": string;
+    "cancelled": boolean;
+}
+
 export interface Catalog {
     "platforms": catalog$0.Platform[] | null;
     "formats": catalog$0.Option[] | null;
     "statuses": catalog$0.Option[] | null;
 }
 
-/**
- * ChatMessage is one turn of a conversation.
- */
 export interface ChatMessage {
     "id": number;
     "sessionId": number;
@@ -58,9 +70,6 @@ export interface ChatMessage {
     "createdAt": string;
 }
 
-/**
- * ChatReply is the result of a sent message.
- */
 export interface ChatReply {
     "session": ChatSession;
     "message": ChatMessage;
@@ -85,9 +94,6 @@ export interface ChatRequest {
     "post": models$0.Post | null;
 }
 
-/**
- * ChatSession is a saved conversation with the copilot.
- */
 export interface ChatSession {
     "id": number;
     "title": string;
@@ -95,9 +101,6 @@ export interface ChatSession {
     "updatedAt": string;
 }
 
-/**
- * Idea is one content suggestion.
- */
 export interface Idea {
     "title": string;
     "hook": string;
@@ -105,9 +108,6 @@ export interface Idea {
     "format": string;
 }
 
-/**
- * IdeasRequest asks for new content ideas for a profile.
- */
 export interface IdeasRequest {
     "profileId": number;
     "themeId": number | null;
@@ -115,11 +115,10 @@ export interface IdeasRequest {
     "format": string;
     "platforms": string[] | null;
     "instructions": string;
+    "research": boolean;
+    "requestId": string;
 }
 
-/**
- * Metadata is the publishing metadata suggested for a post.
- */
 export interface Metadata {
     "title": string;
     "description": string;
@@ -127,19 +126,47 @@ export interface Metadata {
     "hashtags": string[] | null;
 }
 
+export interface RestoreResult {
+    "cancelled": boolean;
+
+    /**
+     * SafetyCopy is the copy of the database made right before restoring.
+     */
+    "safetyCopy": string;
+    "profiles": number;
+    "posts": number;
+}
+
 /**
- * SkillInfo describes a bundled skill for the settings screen.
+ * SearchOpts tunes a search; Country is an ISO code derived from the profile.
  */
+export interface SearchOpts {
+    "Country": string;
+    "Recent": boolean;
+    "RequestID": string;
+}
+
 export interface SkillInfo {
     "id": string;
     "name": string;
     "description": string;
     "source": string;
     "license": string;
-
-    /**
-     * AppliesTo explains in plain words when the skill is used automatically.
-     */
     "appliesTo": string;
     "enabled": boolean;
+}
+
+export interface WebSettings {
+    "firecrawlApiKey": string;
+    "firecrawlBaseUrl": string;
+    "nativeSearch": boolean;
+}
+
+/**
+ * WebStatus says which backend answers searches and page reads right now;
+ * empty means unavailable.
+ */
+export interface WebStatus {
+    "searchVia": string;
+    "fetchVia": string;
 }

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { BookOpen, Check, Lightbulb, Plus, Wand2 } from "@lucide/vue"
-import { computed, ref, watch } from "vue"
+import { computed, onBeforeUnmount, ref, watch } from "vue"
+import { Events } from "@wailsio/runtime"
 import { useRouter } from "vue-router"
 
 import {
     AIService,
+    AiStatus,
     PostService,
     isCancel,
     type Idea,
@@ -12,6 +14,7 @@ import {
 } from "@/lib/api"
 import { formatLabel, profileById, store, themesOf } from "@/lib/store"
 import PageHeader from "@/components/PageHeader.vue"
+import { Checkbox } from "@/components/ui/checkbox"
 import AppSelect from "@/components/AppSelect.vue"
 import { Button } from "@/components/ui/button"
 import { toast, toastError } from "@/lib/toast"
@@ -30,6 +33,17 @@ const count = ref(6)
 const instructions = ref("")
 const ideas = ref<(Idea & { added?: number })[]>([])
 const busy = ref(false)
+const research = ref(false)
+const status = ref("")
+let requestId = ""
+
+const offStatus = Events.On(
+    AiStatus,
+    (ev: { data: { requestId: string; text: string } }) => {
+        if (ev.data.requestId === requestId) status.value = ev.data.text
+    },
+)
+onBeforeUnmount(() => offStatus())
 
 const profileOptions = computed(() =>
     store.profiles.map((p) => ({
@@ -73,6 +87,8 @@ async function generate(): Promise<void> {
         return
     }
     busy.value = true
+    status.value = ""
+    requestId = crypto.randomUUID()
     try {
         ideas.value =
             (await AIService.GenerateIdeas({
@@ -82,6 +98,8 @@ async function generate(): Promise<void> {
                 format: format.value,
                 platforms: [],
                 instructions: instructions.value,
+                research: research.value && !!store.web.searchVia,
+                requestId,
             })) ?? []
         if (!ideas.value.length)
             toast("A IA não trouxe ideias desta vez. Tente de novo.", "error")
@@ -237,6 +255,29 @@ async function add(
                                 <Wand2 />
                                 {{ busy ? "Pensando…" : "Gerar ideias" }}
                             </Button>
+                        </div>
+                        <div
+                            class="flex flex-wrap items-center gap-x-4 gap-y-2"
+                        >
+                            <Label
+                                class="flex items-center gap-2 font-normal"
+                                :class="!store.web.searchVia && 'opacity-60'"
+                            >
+                                <Checkbox
+                                    v-model="research"
+                                    :disabled="!store.web.searchVia"
+                                />
+                                Partir de novidades e tendências da web
+                            </Label>
+                            <span class="text-xs text-muted-foreground">
+                                {{
+                                    busy && status
+                                        ? status
+                                        : store.web.searchVia
+                                          ? `Via ${store.web.searchVia}.`
+                                          : "Configure o Firecrawl ou use um provedor com busca nativa."
+                                }}
+                            </span>
                         </div>
                     </form>
 

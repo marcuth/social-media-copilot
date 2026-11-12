@@ -347,11 +347,13 @@ const streamingMessage = computed<ChatMessage>(() => ({
             </div>
 
             <div
-                v-if="chat.streaming && !chat.streamingContent"
+                v-if="chat.streaming && (!chat.streamingContent || chat.status)"
                 class="flex items-center gap-2 text-muted-foreground"
             >
                 <Loader class="size-3.5 animate-spin" />
-                <span class="text-xs">Pensando...</span>
+                <span class="truncate text-xs">{{
+                    chat.status || "Pensando..."
+                }}</span>
             </div>
             <div
                 v-if="chat.error"

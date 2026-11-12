@@ -3,6 +3,7 @@ import { reactive } from "vue"
 
 import {
     AiDelta,
+    AiStatus,
     ChatService,
     errorMessage,
     isCancel,
@@ -20,6 +21,8 @@ export const chat = reactive({
     messages: [] as ChatMessage[],
     streaming: false,
     streamingContent: "",
+    /** What a running answer is doing, e.g. searching the web. */
+    status: "",
     error: "",
     /** Text being typed, kept when switching between sheet and dialog. */
     draft: "",
@@ -30,8 +33,14 @@ export const chat = reactive({
 let requestId = ""
 let call: { cancel(): void } | null = null
 
+Events.On(AiStatus, (ev: { data: { requestId: string; text: string } }) => {
+    if (ev.data.requestId === requestId) chat.status = ev.data.text
+})
+
 Events.On(AiDelta, (ev: { data: { requestId: string; delta: string } }) => {
-    if (ev.data.requestId === requestId) chat.streamingContent += ev.data.delta
+    if (ev.data.requestId !== requestId) return
+    chat.streamingContent += ev.data.delta
+    chat.status = ""
 })
 
 export async function openChat(): Promise<void> {
@@ -81,6 +90,7 @@ export async function sendMessage(text: string): Promise<void> {
     requestId = crypto.randomUUID()
     chat.streaming = true
     chat.streamingContent = ""
+    chat.status = ""
     const pending = ChatService.SendMessage({
         sessionId: chat.activeSessionId,
         requestId,
@@ -111,6 +121,7 @@ export async function sendMessage(text: string): Promise<void> {
     } finally {
         chat.streaming = false
         chat.streamingContent = ""
+        chat.status = ""
         call = null
         await refreshSessions()
     }

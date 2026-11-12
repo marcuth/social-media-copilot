@@ -28,6 +28,7 @@ import { Events } from "@wailsio/runtime"
 import {
     AIService,
     AiDelta,
+    AiStatus,
     PostService,
     isCancel,
     normPost,
@@ -50,6 +51,7 @@ import PostponeDialog from "@/components/PostponeDialog.vue"
 import MarkdownView from "@/components/MarkdownView.vue"
 import PlatformIcon from "@/components/PlatformIcon.vue"
 import PageHeader from "@/components/PageHeader.vue"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import AppSelect from "@/components/AppSelect.vue"
 import TagInput from "@/components/TagInput.vue"
@@ -346,6 +348,8 @@ const ai = reactive({
     generatingScript: false,
     generatingMeta: false,
     meta: null as Metadata | null,
+    research: false,
+    status: "",
 })
 let scriptCall: { cancel(): void } | null = null
 let requestId = ""
@@ -356,12 +360,19 @@ const offDelta = Events.On(
         if (ev.data.requestId === requestId) ai.scriptDraft += ev.data.delta
     },
 )
+const offStatus = Events.On(
+    AiStatus,
+    (ev: { data: { requestId: string; text: string } }) => {
+        if (ev.data.requestId === requestId) ai.status = ev.data.text
+    },
+)
 onBeforeUnmount(() => {
     offDelta()
+    offStatus()
     scriptCall?.cancel()
 })
 
-function aiRequest(instructions: string): AIRequest {
+function aiRequest(instructions: string, research = false): AIRequest {
     const p = post.value
     return {
         requestId,
@@ -375,6 +386,7 @@ function aiRequest(instructions: string): AIRequest {
         notes: p.notes,
         durationSeconds: ai.duration,
         instructions,
+        research,
     }
 }
 
@@ -391,8 +403,11 @@ async function generateScript(): Promise<void> {
     if (needProvider()) return
     requestId = crypto.randomUUID()
     ai.scriptDraft = ""
+    ai.status = ""
     ai.generatingScript = true
-    const call = AIService.GenerateScript(aiRequest(ai.scriptInstructions))
+    const call = AIService.GenerateScript(
+        aiRequest(ai.scriptInstructions, ai.research && !!store.web.searchVia),
+    )
     scriptCall = call
     try {
         ai.scriptDraft = await call
@@ -769,6 +784,30 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                                         placeholder="Ex.: comece com uma pergunta polêmica"
                                     />
                                 </div>
+                                <Label
+                                    class="flex items-start gap-2 font-normal"
+                                    :class="
+                                        !store.web.searchVia && 'opacity-60'
+                                    "
+                                >
+                                    <Checkbox
+                                        v-model="ai.research"
+                                        class="mt-0.5"
+                                        :disabled="!store.web.searchVia"
+                                    />
+                                    <span>
+                                        Pesquisar na web antes de escrever
+                                        <span
+                                            class="block text-xs text-muted-foreground"
+                                        >
+                                            {{
+                                                store.web.searchVia
+                                                    ? `Via ${store.web.searchVia}.`
+                                                    : "Configure o Firecrawl ou use um provedor com busca nativa em Configurações."
+                                            }}
+                                        </span>
+                                    </span>
+                                </Label>
                                 <Button
                                     v-if="!ai.generatingScript"
                                     class="w-full"
@@ -802,7 +841,9 @@ const card = "rounded-xl border border-border/60 bg-card p-6 shadow-xs"
                                 >
                                     <MarkdownView
                                         :source="
-                                            ai.scriptDraft || 'Escrevendo…'
+                                            ai.scriptDraft ||
+                                            ai.status ||
+                                            'Escrevendo…'
                                         "
                                     />
                                 </div>

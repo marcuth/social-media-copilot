@@ -13,3 +13,8 @@ import "../github.com/wailsapp/wails/v3/internal/eventcreate.js";
  */
 export const AiDelta = "ai:delta";
 
+/**
+ * Name of the custom event "ai:status".
+ */
+export const AiStatus = "ai:status";
+
