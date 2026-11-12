@@ -51,9 +51,15 @@ const key = computed({
             <SelectValue :placeholder="placeholder" />
         </SelectTrigger>
         <SelectContent>
-            <SelectItem v-for="(o, i) in options" :key="i" :value="String(i)">{{
-                o.label
-            }}</SelectItem>
+            <!-- The label is part of the key: reka-ui reads an item's text only
+                 when it mounts, so a reused item would keep a stale label when
+                 the options change under the same index. -->
+            <SelectItem
+                v-for="(o, i) in options"
+                :key="`${i}:${o.label}`"
+                :value="String(i)"
+                >{{ o.label }}</SelectItem
+            >
         </SelectContent>
     </Select>
 </template>
