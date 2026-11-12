@@ -32,7 +32,9 @@ func main() {
 	profiles := &services.ProfileService{DB: conn}
 	posts := &services.PostService{DB: conn}
 	providers := &services.ProviderService{DB: conn}
-	ai := &services.AIService{Profiles: profiles, Providers: providers}
+	skillSvc := &services.SkillService{DB: conn}
+	ai := &services.AIService{Profiles: profiles, Providers: providers, Skills: skillSvc}
+	chat := &services.ChatService{DB: conn, AI: ai, Posts: posts}
 
 	app := application.New(application.Options{
 		Name:        "Social Media Copilot",
@@ -43,6 +45,8 @@ func main() {
 			application.NewService(posts),
 			application.NewService(providers),
 			application.NewService(ai),
+			application.NewService(skillSvc),
+			application.NewService(chat),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
