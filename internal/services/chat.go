@@ -215,11 +215,15 @@ func (s *ChatService) SendMessage(ctx context.Context, r ChatRequest) (ChatReply
 }
 
 func (s *ChatService) stream(ctx context.Context, model goaiModel, requestID, system string, msgs []provider.Message, tools []goai.Tool) (string, error) {
+	// goai.WithTimeout cancels tool-loop streams as soon as StreamText returns
+	// (goai v0.11.0), so the timeout is applied here and released only after
+	// the stream has been read.
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+	defer cancel()
 	opts := []goai.Option{
 		goai.WithSystem(system),
 		goai.WithMessages(msgs...),
 		goai.WithMaxOutputTokens(8000),
-		goai.WithTimeout(5 * time.Minute),
 	}
 	if len(tools) > 0 {
 		opts = append(opts, goai.WithTools(tools...), goai.WithMaxSteps(4))

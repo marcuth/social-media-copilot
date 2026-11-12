@@ -86,6 +86,10 @@ func TestChatStreamsAndPersists(t *testing.T) {
 	if reply.Message.Content != "Olá, criador!" || reply.Message.Model != "Fake · fake-model" {
 		t.Fatalf("unexpected reply: %+v", reply.Message)
 	}
+	// One call, with tools: the retry without tools must not have kicked in.
+	if len(fake.bodies) != 1 {
+		t.Fatalf("want a single model call, got %d", len(fake.bodies))
+	}
 	if len(*deltas) != 2 || (*deltas)[0].RequestID != "r1" {
 		t.Fatalf("deltas: %+v", *deltas)
 	}
